@@ -21,6 +21,26 @@ enum PieceType {
 	NUM_PIECES,
 };
 
+std::string ToName(PieceType t) {
+	switch (t) {
+		case O:
+			return "O";
+		case I:
+			return "I";
+		case T:
+			return "T";
+		case S:
+			return "S";
+		case Z:
+			return "Z";
+		case L:
+			return "L";
+		case J:
+			return "J";
+	}
+	return "";
+}
+
 class Piece {
 	public:
 		Piece(int32_t x, int32_t y, PieceArray array, PieceType type) : mAnchor(x, y), mGrid(array), mType(type) {

@@ -51,6 +51,6 @@ static Piece* CreatePiece(PieceType t) {
 	return new Piece(0, 0, pa, t);
 }
 
-static Piece* CreatePiece() {
-	return CreatePiece(static_cast<PieceType>(distribution(generator)));
+static PieceType getRandomPiece() {
+	return static_cast<PieceType>(distribution(generator));
 }

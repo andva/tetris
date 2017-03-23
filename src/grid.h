@@ -50,7 +50,7 @@ class Grid {
 			}
 			return false;
 		}
-	
+
 		bool Place(const std::vector<glm::ivec2>& collisionObj, int32_t color) {
 			assert(Validate(collisionObj));
 			if (IsAnythingUnder(collisionObj)) {
@@ -67,6 +67,7 @@ class Grid {
 						}
 					}
 					if (complete) {
+						printf("Cleared row: %i\n", r);
 						for (uint32_t x = 0; x < BOARD_GRID_SIZE_X; x++) {
 							mGrid[r][x] = -1;
 						}

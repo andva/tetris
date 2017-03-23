@@ -22,7 +22,7 @@ externalproject_add(glm
 	CONFIGURE_COMMAND ""
 	)
 ExternalProject_Get_Property(glm source_dir)
-message(${source_dir})
+
 set(GLM_INCLUDE_DIR ${source_dir})
 
 IF(UNIX)
@@ -35,7 +35,7 @@ IF(UNIX)
 		#"-Wno-error=unused-but-set-variable"
 		)
 ENDIF(UNIX)
-
+message(${GLEW_LIBRARY})
 list(APPEND PLATFORM_LIBRARIES
 	"${GLFW_LIBRARIES}"
 	"${OPENGL_LIBRARY}"
@@ -45,8 +45,23 @@ include_directories(
 	"${GLFW_INCLUDE_DIR}"
 	"${GLM_INCLUDE_DIR}"
 )
-
+if(GLFW_FOUND AND (GLFW_VERSION VERSION_EQUAL 3.0 OR GLFW_VERSION VERSION_GREATER 3.0))
+	add_definitions( -DGLFW_VERSION_3 )
+endif()
+if (WIN32)
+	list(APPEND PLATFORM_LIBRARIES
+		legacy_stdio_definitions.lib
+	)
+endif()
 if ( GLEW_FOUND )
+	if (WIN32)
+		if ("${GLEW_LIBRARY}" MATCHES "glew32s(d|)")
+			# Link against the static version of GLEW
+			add_definitions(
+				-DGLEW_STATIC
+			)
+		endif()
+	endif()
 	include_directories("${GLEW_INCLUDE_DIR}")
 	list(APPEND PLATFORM_LIBRARIES "${GLEW_LIBRARY}")
 endif()
