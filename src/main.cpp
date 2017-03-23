@@ -21,6 +21,10 @@ struct IboData {
 };
 
 static std::unique_ptr<Piece> currentPiece;
+
+static PieceType sStoredPiece;
+static bool sHoldLock;
+
 static std::unique_ptr<Grid> sGrid;
 
 static IboData pieceIbo;
@@ -84,8 +88,24 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 	else if (key == GLFW_KEY_S && action == GLFW_RELEASE) {
 		ExecuteAction(DOWN, MOVE);
 	}
+	else if (key == GLFW_KEY_H && action == GLFW_RELEASE) {
+		if (sStoredPiece == NUM_PIECES) {
+			sStoredPiece = currentPiece->GetType();
+			currentPiece.reset(CreatePiece());
+			
+			update_renderable(currentPiece->GetRenderable(), pieceIbo);
+			sHoldLock = true;
+		}
+		else if (!sHoldLock) {
+			PieceType newType = currentPiece->GetType();
+			currentPiece.reset(CreatePiece(sStoredPiece));
+			sStoredPiece = newType;
+			sHoldLock = true;
+			update_renderable(currentPiece->GetRenderable(), pieceIbo);
+		}
+	}
 	else if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE) {
-		if (sGrid->Place(currentPiece->GetCollisionObject(), currentPiece->GetColor())) {
+		if (sGrid->Place(currentPiece->GetCollisionObject(), currentPiece->GetType())) {
 
 			currentPiece.reset(CreatePiece());
 			
@@ -93,6 +113,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 			for (int i = 0; i < gridIbos.size(); i++) {
 				update_renderable(sGrid->GetRenderable(i + 1), gridIbos[i]);
 			}
+			sHoldLock = false;
 		}
 	}
 }
@@ -122,7 +143,8 @@ int main(int argc, char *argv[]) {
 	GLFWwindow* window = init_rendering();
 	int32_t shader_program = compile_program();
 	glfwSetKeyCallback(window, key_callback);
-	
+	sStoredPiece = NUM_PIECES;
+	sHoldLock = false;
 	currentPiece.reset(CreatePiece());
 	sGrid.reset(new Grid);
 	uint32_t ptVbo = create_render_grid();
@@ -152,7 +174,7 @@ int main(int argc, char *argv[]) {
 		glBindVertexArray(vao);
 		GLint loc = glGetUniformLocation(shader_program, "color");
 		if (loc != -1) {
-   			glUniform1ui(loc, currentPiece->GetColor());
+   			glUniform1ui(loc, currentPiece->GetType() - 1);
 		}
 		glDrawElements(
 			GL_TRIANGLES,
@@ -163,7 +185,7 @@ int main(int argc, char *argv[]) {
 		for (uint32_t i = 0; i < gridIbos.size(); i++) {
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gridIbos[i].id);
 			if (loc != -1) {
-   				glUniform1ui(loc, i + 1);
+   				glUniform1ui(loc, i);
 			}
 			glDrawElements(
 				GL_TRIANGLES,

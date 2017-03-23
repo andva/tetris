@@ -10,9 +10,20 @@
 
 typedef std::vector<std::vector<int32_t>> PieceArray;
 
+enum PieceType {
+	O = 1,
+	I = 2,
+	T = 3,
+	S = 4,
+	Z = 5,
+	L = 6,
+	J = 7,
+	NUM_PIECES,
+};
+
 class Piece {
 	public:
-		Piece(int32_t x, int32_t y, PieceArray array, int32_t color) : mAnchor(x, y), mGrid(array), mColor(color) {
+		Piece(int32_t x, int32_t y, PieceArray array, PieceType type) : mAnchor(x, y), mGrid(array), mType(type) {
 			for (int y = 0; y < array.size(); y++) {
 				assert(array.size() == array[y].size());
 			}
@@ -103,12 +114,12 @@ class Piece {
 			return renderable;
 		}
 	
-		int32_t GetColor() const {
-			return mColor;
+		PieceType GetType() const {
+			return mType;
 		}
 	
 	private:
 		glm::ivec2 mAnchor;
 		PieceArray mGrid;
-		int32_t mColor;
+		PieceType mType;
 };
