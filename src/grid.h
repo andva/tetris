@@ -7,7 +7,6 @@
 #include <set>
 #include <glm/vec2.hpp>
 
-const int PIECE_GRID_SIZE = 5;
 const int BOARD_GRID_SIZE_X = 10;
 const int BOARD_GRID_SIZE_Y = 22;
 
@@ -95,12 +94,13 @@ class Grid {
 			return false;
 		}
 	
-		std::vector<unsigned int> GetRenderable() {
+		std::vector<unsigned int> GetRenderable(int32_t color) {
+			assert(color != 0);
 			std::vector<unsigned int> renderable;
 			
 			for (uint32_t y = 0; y < BOARD_GRID_SIZE_Y; y++) {
 				for (uint32_t x = 0; x < BOARD_GRID_SIZE_X; x++) {
-					if (mGrid[y][x] > 0) {
+					if (mGrid[y][x] == color) {
 						renderable.push_back(x + y * (BOARD_GRID_SIZE_X + 1));
 						renderable.push_back(x + 1 + y * (BOARD_GRID_SIZE_X + 1));
 						renderable.push_back(x + 1 + (y + 1) * (BOARD_GRID_SIZE_X + 1));

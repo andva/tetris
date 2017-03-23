@@ -49,9 +49,27 @@ int32_t compile_program() {
 
 	const char* fragment_shader =
 		"#version 400\n"
+		"uniform uint color;"
 		"out vec4 frag_colour;"
 		"void main() {"
-		"  frag_colour = vec4(0.5, 0.0, 0.5, 1.0);"
+		"	if (color == 5) {"
+		"		frag_colour = vec4(1.0, 0.0, 1.0, 1.0);"
+		"	}"
+		"	else if (color == 1) {"
+		"		frag_colour = vec4(1.0, 0.0, 0.0, 1.0);"
+		"	}"
+		"	else if (color == 2) {"
+		"		frag_colour = vec4(0.0, 1.0, 0.0, 1.0);"
+		"	}"
+		"	else if (color == 3) {"
+		"		frag_colour = vec4(0.0, 0.0, 1.0, 1.0);"
+		"	}"
+		"	else if (color == 4) {"
+		"		frag_colour = vec4(0.0, 1.0, 1.0, 1.0);"
+		"	}"
+		"	else {"
+		"		frag_colour = vec4(1.0, 1.0, 0.0, 1.0);"
+		"	}"
 		"}";
 
 	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
