@@ -1,92 +1,118 @@
 #pragma once
 
+#include "direction.h"
+
 #include <array>
 #include <vector>
-#include <cassert>
+#include <set>
 #include <glm/vec2.hpp>
-#include <glm/mat2x2.hpp>
 
 const int PIECE_GRID_SIZE = 5;
-typedef std::array<std::array<int32_t, PIECE_GRID_SIZE>, PIECE_GRID_SIZE> PieceArray;
-enum Direction {
-	LEFT,
-	RIGHT,
-	DOWN
-};
+const int BOARD_GRID_SIZE_X = 10;
+const int BOARD_GRID_SIZE_Y = 22;
 
-class PieceGrid {
+class Grid {
 	public:
-		PieceGrid(int32_t x, int32_t y, PieceArray array) : mAnchor(x, y), mGrid(array) {
-
+		Grid() {
+			ResetGrid();
 		}
-		void Rotate(Direction d) {
-			PieceArray newGrid;
-			for (int32_t y = 0; y < PIECE_GRID_SIZE; y++) {
-				for (int32_t x = 0; x < PIECE_GRID_SIZE; x++) {
-					glm::vec2 p = glm::vec2(static_cast<float>(x), static_cast<float>(y));
-					glm::mat2 rot = d == RIGHT ? glm::mat2(0, 1, -1, 0) : glm::mat2(0, -1, 1, 0);
-					
-					int xOffset = d == LEFT ? PIECE_GRID_SIZE - 1 : 0;
-					int yOffset = d == LEFT ? 0 : PIECE_GRID_SIZE - 1;
-					glm::vec2 newP = p * rot;
-					int32_t nx = static_cast<int32_t>(newP.x) + xOffset;
-					int32_t ny = static_cast<int32_t>(newP.y) + yOffset;
-					assert(nx >= 0 && ny >= 0);
-					newGrid[nx][ny] = mGrid[x][y];
+	
+		void ResetGrid() {
+			for (uint32_t y = 0; y < BOARD_GRID_SIZE_Y; y++) {
+				for (uint32_t x = 0; x < BOARD_GRID_SIZE_X; x++) {
+					mGrid[y][x] = 0;
 				}
 			}
-			mGrid = newGrid;
 		}
-
-		glm::vec2 ToRenderable(int32_t x, int32_t y) {
-			return glm::vec2(static_cast<float>(x) / PIECE_GRID_SIZE, static_cast<float>(y) / PIECE_GRID_SIZE);
+	
+		bool Validate(std::vector<glm::ivec2> collisionObj) const {
+			assert(collisionObj.size() > 0);
+			for (glm::ivec2 c : collisionObj) {
+				if (c.x < 0 || c.y < 0
+					|| c.x >= BOARD_GRID_SIZE_X
+					|| c.y >= BOARD_GRID_SIZE_Y) {
+					return false;
+				}
+				if (mGrid[c.y][c.x] > 0) {
+					return false;
+				}
+			}
+			return true;
 		}
-
-		std::vector<float> GetRenderable() {
-			std::vector<float> renderable;
-			for (int32_t x = 0; x < PIECE_GRID_SIZE; x++) {
-				for (int32_t y = 0; y < PIECE_GRID_SIZE; y++) {
-					if (mGrid[x][y] > 0) {
-						glm::vec2 p1 = ToRenderable(x, y);
-						glm::vec2 p2 = ToRenderable(x + 1, y);
-						glm::vec2 p3 = ToRenderable(x, y + 1);
-						glm::vec2 p4 = ToRenderable(x + 1, y + 1);
-						renderable.push_back(p1.x); 
-						renderable.push_back(p1.y);
-						renderable.push_back(0);
-						renderable.push_back(p3.x);
-						renderable.push_back(p3.y);
-						renderable.push_back(0);
-						renderable.push_back(p2.x);
-						renderable.push_back(p2.y);
-						renderable.push_back(0);
-
-						renderable.push_back(p2.x); 
-						renderable.push_back(p2.y);
-						renderable.push_back(0);
-						renderable.push_back(p3.x);
-						renderable.push_back(p3.y);
-						renderable.push_back(0);
-						renderable.push_back(p4.x);
-						renderable.push_back(p4.y);
-						renderable.push_back(0);
+	
+		bool IsAnythingUnder(const std::vector<glm::ivec2>& collisionObj) const {
+			for (glm::ivec2 c : collisionObj) {
+				if (c.y == BOARD_GRID_SIZE_Y - 1) {
+					return true;
+				}
+				else if (mGrid[c.y + 1][c.x] > 0) {
+					return true;
+				}
+			}
+			return false;
+		}
+	
+		bool Place(const std::vector<glm::ivec2>& collisionObj, int32_t color) {
+			assert(Validate(collisionObj));
+			if (IsAnythingUnder(collisionObj)) {
+				std::set<uint32_t> rows;
+				for (glm::ivec2 c : collisionObj) {
+					mGrid[c.y][c.x] = color;
+					rows.insert(c.y);
+				}
+				for (uint32_t r : rows) {
+					bool complete = true;
+					for (uint32_t x = 0; x < BOARD_GRID_SIZE_X; x++) {
+						if (mGrid[r][x] == 0) {
+							complete = false;
+						}
+					}
+					if (complete) {
+						for (uint32_t x = 0; x < BOARD_GRID_SIZE_X; x++) {
+							mGrid[r][x] = -1;
+						}
+					}
+				}
+				for (int32_t y = BOARD_GRID_SIZE_Y - 1; y >= 0; y--) {
+					for (int32_t x = 0; x < BOARD_GRID_SIZE_X; x++) {
+						if (mGrid[y][x] < 0) {
+							uint32_t cy = y - 1;
+							while (mGrid[cy][x] < 0 && cy > 0) {
+								cy--;
+							}
+							if (cy == 0) {
+								mGrid[y][x] = 0;
+							}
+							else {
+								mGrid[y][x] = mGrid[cy][x];
+								mGrid[cy][x] = -1;
+							}
+						}
+					}
+				}
+				return true;
+			}
+			return false;
+		}
+	
+		std::vector<unsigned int> GetRenderable() {
+			std::vector<unsigned int> renderable;
+			
+			for (uint32_t y = 0; y < BOARD_GRID_SIZE_Y; y++) {
+				for (uint32_t x = 0; x < BOARD_GRID_SIZE_X; x++) {
+					if (mGrid[y][x] > 0) {
+						renderable.push_back(x + y * (BOARD_GRID_SIZE_X + 1));
+						renderable.push_back(x + 1 + y * (BOARD_GRID_SIZE_X + 1));
+						renderable.push_back(x + 1 + (y + 1) * (BOARD_GRID_SIZE_X + 1));
+						
+						renderable.push_back(x + y * (BOARD_GRID_SIZE_X + 1));
+						renderable.push_back(x + (y + 1) * (BOARD_GRID_SIZE_X + 1));
+						renderable.push_back((x + 1) + (y + 1) * (BOARD_GRID_SIZE_X + 1));
 					}
 				}
 			}
 			return renderable;
 		}
 	private:
-		glm::ivec2 mAnchor;
-		PieceArray mGrid;
-};
-
-class Grid {
-	public:
-		Grid() {
-			
-		}
-
-
-	private:
-		std::array<std::array<int32_t, 22>, 10> mGrid;
+		std::array<std::array<int32_t, BOARD_GRID_SIZE_X>, BOARD_GRID_SIZE_Y> mGrid;
 };

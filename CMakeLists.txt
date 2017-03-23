@@ -58,6 +58,9 @@ set(SOURCES
 set(HEADERS
 	"src/grid.h"
 	"src/rendering.h"
+	"src/piecefactory.h"
+	"src/piece.h"
+	"src/direction.h"
 	)
 
 include_directories(

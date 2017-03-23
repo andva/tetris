@@ -14,7 +14,7 @@ GLFWwindow* init_rendering() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	GLFWwindow* window = glfwCreateWindow(600, 900, "Tetris", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(400, 800, "Tetris", NULL, NULL);
 	if (!window) {
 		exit(1);
 	}
