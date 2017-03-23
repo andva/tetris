@@ -1,55 +1,71 @@
 cmake_minimum_required(VERSION 2.6.0)
 set(PROJ_NAME tetris)
 project(tetris)
+set(CMAKE_MODULE_PATH
+	"${CMAKE_CURRENT_SOURCE_DIR}/cmake"
+)
 
-find_package(GLFW 3.0.0)
-find_package(OpenGL)
+find_package(GLFW REQUIRED)
+find_package(OpenGL REQUIRED)
 
 if (APPLE)
-    find_package(GLEW)
+	find_package(GLEW)
 else()
-    find_package(GLEW REQUIRED)
+	find_package(GLEW REQUIRED)
 endif()
 
+include(ExternalProject)
+externalproject_add(glm
+	GIT_REPOSITORY https://github.com/g-truc/glm.git
+	INSTALL_COMMAND ""
+	BUILD_COMMAND ""
+	CONFIGURE_COMMAND ""
+	)
+ExternalProject_Get_Property(glm source_dir)
+message(${source_dir})
+set(GLM_INCLUDE_DIR ${source_dir})
+
 IF(UNIX)
-	SET(CMAKE_CXX_FLAGS "-std=c++11 -Werror -Wall -Werror=sign-compare -Wno-error=unused-variable -Wno-error=unused-but-set-variable")
+	SET(CMAKE_CXX_FLAGS
+		"-std=c++11"
+		#"-Werror"
+		#"-Wall"
+		#"-Werror=sign-compare"
+		#"-Wno-error=unused-variable"
+		#"-Wno-error=unused-but-set-variable"
+		)
 ENDIF(UNIX)
 
 list(APPEND PLATFORM_LIBRARIES
-    "${GLFW_LIBRARIES}"
+	"${GLFW_LIBRARIES}"
+	"${OPENGL_LIBRARY}"
 )
 
 include_directories(
-    "${GLFW_INCLUDE_DIR}"
+	"${GLFW_INCLUDE_DIR}"
+	"${GLM_INCLUDE_DIR}"
 )
 
 if ( GLEW_FOUND )
-    include_directories("${GLEW_INCLUDE_DIR}")
-    list(APPEND PLATFORM_LIBRARIES "${GLEW_LIBRARY}")
+	include_directories("${GLEW_INCLUDE_DIR}")
+	list(APPEND PLATFORM_LIBRARIES "${GLEW_LIBRARY}")
 endif()
 
-FILE(GLOB HEADERS  ./*.h*)
+set(SOURCES
+	"src/main.cpp"
+	)
 
-FILE(GLOB SRCS  ./*.cpp)
+set(HEADERS
+	"src/grid.h"
+	"src/rendering.h"
+	)
 
 include_directories(
 	${tetris_INCLUDE_DIRS}
 	)
 
-link_directories(
-    ${EXTRA_LIB_FILES}
-	${CMAKE_SOURCE_DIR}/externals/libs
-	${EXTRA_LIB_FILES}
-	)
+add_executable(tetris ${HEADERS} ${SOURCES} )
 
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/export)
+add_dependencies(${PROJ_NAME} glm)
 
-add_executable(tetris ${HEADERS} ${SRCS} )
-
-if(WIN32)
-	target_link_libraries(tetris GLFW.lib FreeImage.lib freeglut.lib)
-endif(WIN32)
-
-if(UNIX)
-	target_link_libraries(tetris freeimage ${EXTRA_LIBS})
-endif(UNIX)
+target_link_libraries(tetris ${PLATFORM_LIBRARIES})
