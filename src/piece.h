@@ -37,8 +37,9 @@ std::string ToName(PieceType t) {
 			return "L";
 		case J:
 			return "J";
+		default:
+			return "";
 	}
-	return "";
 }
 
 class Piece {

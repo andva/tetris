@@ -11,7 +11,7 @@ static std::uniform_int_distribution<int> distribution(1, NUM_PIECES - 1);
 static Piece* CreatePiece(PieceType t) {
 	PieceArray pa;
 	int32_t x = 3;
-	int32_t y = -2;
+	int32_t y = 0;
 	if (t == O) {
 		pa.push_back({{1, 1}});
 		pa.push_back({{1, 1}});
@@ -22,6 +22,7 @@ static Piece* CreatePiece(PieceType t) {
 		pa.push_back({{1, 1, 1, 1}});
 		pa.push_back({{0, 0, 0, 0}});
 		pa.push_back({{0, 0, 0, 0}});
+		y = -1;
 	}
 	else if (t == T) {
 		pa.push_back({{0, 1, 0}});

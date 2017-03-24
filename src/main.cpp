@@ -21,11 +21,30 @@ struct IboData {
 	int32_t size;
 };
 
+struct Heurestics {
+	uint32_t aggregateHeight;
+	uint32_t completeLines;
+	uint32_t holes;
+	uint32_t bumpiness;
+	uint32_t score;
+};
+
+static Heurestics sHeurestics;
+
 static IboData pieceIbo;
 static std::unique_ptr<PieceManager> sPieceManager;
 static std::unique_ptr<Grid> sGrid;
 std::array<IboData, NUM_PIECES> gridIbos;
-uint32_t sPoints;
+
+static void print_heuristics() {
+	std::cout
+		<< "AH:" <<sHeurestics.aggregateHeight << " "
+		<< "BN:" << sHeurestics.bumpiness << " "
+		<< "CL:" << sHeurestics.completeLines << " "
+		<< "HL:" << sHeurestics.holes << " "
+		<< "SC:" << sHeurestics.score << " "
+		<< std::endl;
+}
 
 static void update_renderable(const std::vector<uint32_t>& indices, IboData& iboData) {
 	if (indices.size() == 0) {
@@ -38,6 +57,37 @@ static void update_renderable(const std::vector<uint32_t>& indices, IboData& ibo
 		&indices[0],
 		GL_STATIC_DRAW);
 	iboData.size = static_cast<int>(indices.size());
+}
+
+void CalculateScore(std::pair<uint32_t, bool> res) {
+	int32_t score = 0;
+	if (!res.second) {
+		if (res.first == 1) {
+			score += 100;
+		}
+		else if (res.first == 2) {
+			score += 300;
+		}
+		else if (res.first == 3) {
+			score += 500;
+		}
+		else if (res.first == 4) {
+			score += 800;
+		}
+	}
+	else {
+		assert(res.first <= 3);
+		if (res.first == 1) {
+			score += 800;
+		}
+		else if (res.first == 2) {
+			score += 1200;
+		}
+		else if (res.first == 3) {
+			score += 1600;
+		}
+	}
+	sHeurestics.score += score;
 }
 
 static bool ExecuteAction(Direction d, Action a) {
@@ -56,6 +106,38 @@ static bool ExecuteAction(Direction d, Action a) {
 	else {
 		update_renderable(sPieceManager->GetPiece()->GetRenderable(), pieceIbo);
 		return true;
+	}
+}
+
+static void Hold() {
+	if (sPieceManager->Hold()) {
+		update_renderable(sPieceManager->GetPiece()->GetRenderable(), pieceIbo);
+	}
+}
+
+static void Drop() {
+	while (ExecuteAction(DOWN, MOVE));
+	auto collObj = sPieceManager->GetPiece()->GetCollisionObject();
+	if (sGrid->IsAnythingUnder(collObj)) {
+		auto res = sGrid->Place(
+			collObj,
+			sPieceManager->GetPiece()->GetType());
+		sHeurestics.completeLines += res.first;
+
+		sPieceManager->SetNext();
+			
+		update_renderable(sPieceManager->GetPiece()->GetRenderable(), pieceIbo);
+		for (int i = 0; i < gridIbos.size(); i++) {
+			update_renderable(sGrid->GetRenderable(i + 1), gridIbos[i]);
+		}
+		sGrid->CalculateGridHeuristics(
+			sHeurestics.holes,
+			sHeurestics.aggregateHeight,
+			sHeurestics.bumpiness
+			);
+		CalculateScore(res);
+		print_heuristics();
+
 	}
 }
 
@@ -80,21 +162,10 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		ExecuteAction(DOWN, MOVE);
 	}
 	else if (key == GLFW_KEY_H && action == GLFW_RELEASE) {
-		if (sPieceManager->Hold()) {
-			update_renderable(sPieceManager->GetPiece()->GetRenderable(), pieceIbo);
-		}
+		Hold();
 	}
 	else if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE) {
-		while (ExecuteAction(DOWN, MOVE));
-		if (sGrid->Place(sPieceManager->GetPiece()->GetCollisionObject(),
-			sPieceManager->GetPiece()->GetType())) {
-			sPieceManager->SetNext();
-			
-			update_renderable(sPieceManager->GetPiece()->GetRenderable(), pieceIbo);
-			for (int i = 0; i < gridIbos.size(); i++) {
-				update_renderable(sGrid->GetRenderable(i + 1), gridIbos[i]);
-			}
-		}
+		Drop();
 	}
 }
 
@@ -133,13 +204,16 @@ void draw(IboData data, GLint colorLoc, int32_t color) {
 }
 
 void Reset() {
-	sPoints = 0;
 	sPieceManager.reset(new PieceManager);
 	sGrid.reset(new Grid);
 	update_renderable(sPieceManager->GetPiece()->GetRenderable(), pieceIbo);
 	for (int i = 0; i < gridIbos.size(); i++) {
 		update_renderable(sGrid->GetRenderable(i + 1), gridIbos[i]);
 	}
+	sHeurestics.aggregateHeight = 0;
+	sHeurestics.bumpiness = 0;
+	sHeurestics.completeLines = 0;
+	sHeurestics.holes = 0;
 }
 
 int main(int argc, char *argv[]) {
@@ -168,6 +242,10 @@ int main(int argc, char *argv[]) {
 	glBindVertexArray(vao);
 
 	while (!glfwWindowShouldClose(window)) {
+		// AI
+		
+		// Drawing
+	
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		for (uint32_t i = 0; i < gridIbos.size(); i++) {
