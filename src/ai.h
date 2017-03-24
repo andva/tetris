@@ -22,6 +22,7 @@ class Ai {
 			mWeights.holes = ho;
 			mWeights.bumpiness = bu;
 		}
+	
 		Piece* CalculateOptimal(PieceType t, std::shared_ptr<Grid> grid) {
 			std::shared_ptr<Piece> optimalP;
 			

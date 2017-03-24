@@ -128,9 +128,10 @@ int main(int argc, char *argv[]) {
 #if !NO_AI
 		ai.CalculateOptimal(sPieceManager->GetPiece()->GetType(), sGrid);
 		Drop(sGrid);
+		std::this_thread::sleep_for(std::chrono::milliseconds(200));
 #endif
 		// Drawing
-	
+
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		for (uint32_t i = 0; i < gridIbos.size(); i++) {
@@ -148,7 +149,7 @@ int main(int argc, char *argv[]) {
 		if (sGrid->HasLost()) {
 			Reset();
 		}
-		//std::this_thread::sleep_for(std::chrono::milliseconds(400));
+		
 	}
 
 	glfwDestroyWindow(window);

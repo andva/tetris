@@ -70,6 +70,15 @@ class Grid {
 					mLost = true;
 					return result;
 				}
+				
+				if (std::find(collisionObj.begin(), collisionObj.end(), glm::ivec2(c.x, c.y - 1)) == collisionObj.end()) {
+					int32_t v = mGrid[c.y - 1][c.x];
+					bool tspin = (v > 0);
+					if (tspin) {
+						result.second = result.second || tspin;
+					}
+				}
+				
 				mGrid[c.y][c.x] = color;
 				rows.insert(c.y);
 			}

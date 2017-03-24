@@ -29,6 +29,7 @@ static Heurestics sHeurestics;
 
 void CalculateScore(std::pair<uint32_t, bool> res) {
 	int32_t score = 0;
+	if (res.first == 0) return;
 	if (!res.second) {
 		if (res.first == 1) {
 			score += 100;
@@ -59,7 +60,7 @@ void CalculateScore(std::pair<uint32_t, bool> res) {
 }
 
 static void print_heuristics() {
-	return;
+//	return;
 	std::cout
 		<< "AH:" << sHeurestics.aggregateHeight << " "
 		<< "BN:" << sHeurestics.bumpiness << " "
