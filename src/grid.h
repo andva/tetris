@@ -12,7 +12,7 @@ const int BOARD_GRID_SIZE_Y = 20;
 
 class Grid {
 	public:
-		Grid() {
+		Grid() : mLost(false) {
 			ResetGrid();
 		}
 	
@@ -32,8 +32,10 @@ class Grid {
 					|| c.y >= BOARD_GRID_SIZE_Y) {
 					return false;
 				}
-				if (mGrid[c.y][c.x] > 0) {
-					return false;
+				if (c.y >= 0) {
+					if (mGrid[c.y][c.x] > 0) {
+						return false;
+					}
 				}
 			}
 			return true;
@@ -54,8 +56,12 @@ class Grid {
 		bool Place(const std::vector<glm::ivec2>& collisionObj, int32_t color) {
 			assert(Validate(collisionObj));
 			if (IsAnythingUnder(collisionObj)) {
-				std::set<uint32_t> rows;
+				std::set<int32_t> rows;
 				for (glm::ivec2 c : collisionObj) {
+					if (c.y < 0) {
+						mLost = true;
+						return true;
+					}
 					mGrid[c.y][c.x] = color;
 					rows.insert(c.y);
 				}
@@ -113,6 +119,11 @@ class Grid {
 			}
 			return renderable;
 		}
+	
+		bool HasLost() const {
+			return mLost;
+		}
 	private:
 		std::array<std::array<int32_t, BOARD_GRID_SIZE_X>, BOARD_GRID_SIZE_Y> mGrid;
+		bool mLost;
 };

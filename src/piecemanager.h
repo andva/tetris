@@ -10,11 +10,11 @@
 class PieceManager {
 public:
 	PieceManager()
-		: mPiece(CreatePiece(getRandomPiece()))
-		, mHoldLock(false)
+		: mHoldLock(false)
 		, mStoredPiece(NUM_PIECES)
 	{
 		FillPieceQueue();
+		SetNext();
 	}
 
 	bool Hold() {
@@ -42,8 +42,11 @@ public:
 	}
 
 	void FillPieceQueue() {
-		while (mPieceQueue.size() < 4) {
-			mPieceQueue.push_back(getRandomPiece());
+		if (mPieceQueue.size() < 7) {
+			auto newSet = GenerateSequence();
+			for (auto piece : newSet) {
+				mPieceQueue.push_back(piece);
+			}
 		}
 	}
 
@@ -57,9 +60,7 @@ public:
 
 	std::string GetFutureState() const {
 		std::stringstream ss;
-		for (auto pt : mPieceQueue) {
-			ss << ToName(pt) << " ";
-		}
+		ss << ToName(mPieceQueue.front()) << " ";
 		ss << "(" << ToName(mStoredPiece) << ")";
 		return ss.str();
 	}

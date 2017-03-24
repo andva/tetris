@@ -25,6 +25,7 @@ static IboData pieceIbo;
 static std::unique_ptr<PieceManager> sPieceManager;
 static std::unique_ptr<Grid> sGrid;
 std::array<IboData, NUM_PIECES> gridIbos;
+uint32_t sPoints;
 
 static void update_renderable(const std::vector<uint32_t>& indices, IboData& iboData) {
 	if (indices.size() == 0) {
@@ -131,23 +132,28 @@ void draw(IboData data, GLint colorLoc, int32_t color) {
 		);
 }
 
+void Reset() {
+	sPoints = 0;
+	sPieceManager.reset(new PieceManager);
+	sGrid.reset(new Grid);
+	update_renderable(sPieceManager->GetPiece()->GetRenderable(), pieceIbo);
+	for (int i = 0; i < gridIbos.size(); i++) {
+		update_renderable(sGrid->GetRenderable(i + 1), gridIbos[i]);
+	}
+}
+
 int main(int argc, char *argv[]) {
 	GLFWwindow* window = init_rendering();
 	int32_t shader_program = compile_program();
 	glfwSetKeyCallback(window, key_callback);
-	sPieceManager.reset(new PieceManager);
 
-	sGrid.reset(new Grid);
 	uint32_t ptVbo = create_render_grid();
 	glGenBuffers(1, &pieceIbo.id);
 	for (int i = 0; i < gridIbos.size(); i++) {
 		glGenBuffers(1, &gridIbos[i].id);
 	}
 
-	update_renderable(sPieceManager->GetPiece()->GetRenderable(), pieceIbo);
-	for (int i = 0; i < gridIbos.size(); i++) {
-		update_renderable(sGrid->GetRenderable(i + 1), gridIbos[i]);
-	}
+	Reset();
 
 	GLuint vao = 0;
 	glGenVertexArrays(1, &vao);
@@ -175,6 +181,10 @@ int main(int argc, char *argv[]) {
 
 		glfwSetWindowTitle(window, sPieceManager->GetFutureState().c_str());
 		glfwSwapBuffers(window);
+		
+		if (sGrid->HasLost()) {
+			Reset();
+		}
 	}
 
 	glfwDestroyWindow(window);

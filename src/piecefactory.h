@@ -3,6 +3,7 @@
 #include "piece.h"
 
 #include <random>
+#include <vector>
 
 static std::default_random_engine generator;
 static std::uniform_int_distribution<int> distribution(1, NUM_PIECES - 1);
@@ -27,12 +28,12 @@ static Piece* CreatePiece(PieceType t) {
 		pa.push_back({{1, 1, 1}});
 		pa.push_back({{0, 0, 0}});
 	}
-	else if (t == S) {
+	else if (t == Z) {
 		pa.push_back({{1, 1, 0}});
 		pa.push_back({{0, 1, 1}});
 		pa.push_back({{0, 0, 0}});
 	}
-	else if (t == Z) {
+	else if (t == S) {
 		pa.push_back({{0, 1, 1}});
 		pa.push_back({{1, 1, 0}});
 		pa.push_back({{0, 0, 0}});
@@ -57,13 +58,15 @@ static PieceType getRandomPiece() {
 	return static_cast<PieceType>(distribution(generator));
 }
 
-static std::vector<PieceType> generateSequence() {
-	std::map<PieceType> pool = { J, L, O, T, I, S, Z };
+static std::vector<PieceType> GenerateSequence() {
+	std::vector<PieceType> pool = { J, L, O, T, I, S, Z };
 	std::vector<PieceType> newSequence;
 	while (pool.size() > 0) {
-		std::uniform_int_distribution<int> sequenceDist(0, pool.size());
-		newSequence.push_back(static_cast<PieceType>(sequenceDist(generator)));
-		pool.erase(pool.find(newSequence.back()));
+		std::uniform_int_distribution<int> sequenceDist(0, pool.size() - 1);
+		newSequence.push_back(pool[sequenceDist(generator)]);
+		auto it = std::find(pool.begin(), pool.end(), newSequence.back());
+		assert(it != pool.end());
+		pool.erase(it);
 	}
 	return newSequence;
 }
