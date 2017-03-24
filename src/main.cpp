@@ -171,10 +171,10 @@ int main(int argc, char *argv[]) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		for (uint32_t i = 0; i < gridIbos.size(); i++) {
-			draw(gridIbos[i], loc, i);
+			draw(gridIbos[i], loc, i + 1);
 		}
 
-		draw(pieceIbo, loc, sPieceManager->GetPiece()->GetType() - 1);
+		draw(pieceIbo, loc, sPieceManager->GetPiece()->GetType());
 
 		
 		glfwPollEvents();

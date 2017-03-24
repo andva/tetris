@@ -22,6 +22,7 @@ class Grid {
 					mGrid[y][x] = 0;
 				}
 			}
+			mLost = false;
 		}
 	
 		bool Validate(std::vector<glm::ivec2> collisionObj) const {
