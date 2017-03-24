@@ -77,6 +77,8 @@ set(HEADERS
 	"src/piece.h"
 	"src/direction.h"
 	"src/piecemanager.h"
+	"src/ai.h"
+	"src/game.h"
 	)
 
 include_directories(

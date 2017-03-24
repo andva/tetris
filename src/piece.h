@@ -48,6 +48,7 @@ class Piece {
 			for (int y = 0; y < array.size(); y++) {
 				assert(array.size() == array[y].size());
 			}
+			UpdateCollisionObject();
 		}
 	
 		PieceArray CreateArray() {

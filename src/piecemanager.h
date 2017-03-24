@@ -26,7 +26,7 @@ public:
 		}
 		else if (!mHoldLock) {
 			PieceType newType = mPiece->GetType();
-			mPiece.reset(CreatePiece(mStoredPiece));
+			mPiece = CreatePiece(mStoredPiece);
 			mStoredPiece = newType;
 			mHoldLock = true;
 			return true;
@@ -35,7 +35,7 @@ public:
 	}
 
 	void SetNext() {
-		mPiece.reset(CreatePiece(mPieceQueue.front()));
+		mPiece = CreatePiece(mPieceQueue.front());
 		mPieceQueue.pop_front();
 		FillPieceQueue();
 		mHoldLock = false;
@@ -50,12 +50,28 @@ public:
 		}
 	}
 
+	void ReplaceCurrentPiece(std::shared_ptr<Piece> p) {
+		mPiece = p;
+	}
+
 	bool IsPieceStored() const {
 		return mHoldLock;
 	}
 
 	const std::shared_ptr<Piece> GetPiece() const {
 		return mPiece;
+	}
+
+	bool HasHoldType() const {
+		return mStoredPiece != NUM_PIECES;
+	}
+
+	PieceType GetHoldType() const {
+		return mStoredPiece;
+	}
+
+	PieceType GetNextType() const {
+		return mPieceQueue.front();
 	}
 
 	std::string GetFutureState() const {

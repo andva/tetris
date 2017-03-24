@@ -57,7 +57,11 @@ class Grid {
 		}
 
 		std::pair<uint32_t, bool> Place(const std::vector<glm::ivec2>& collisionObj, int32_t color) {
-			assert(Validate(collisionObj));
+			if (!Validate(collisionObj)) {
+				mLost = true;
+			}
+			if (mLost) return std::make_pair(0, false);
+			
 			std::pair<uint32_t, bool> result = {0, false};
 			std::set<int32_t> rows;
 			// Place piece in grid, check if lost

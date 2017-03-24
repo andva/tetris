@@ -8,7 +8,7 @@
 static std::default_random_engine generator;
 static std::uniform_int_distribution<int> distribution(1, NUM_PIECES - 1);
 
-static Piece* CreatePiece(PieceType t) {
+static std::shared_ptr<Piece> CreatePiece(PieceType t) {
 	PieceArray pa;
 	int32_t x = 3;
 	int32_t y = 0;
@@ -52,7 +52,7 @@ static Piece* CreatePiece(PieceType t) {
 	else {
 		assert(false);
 	}
-	return new Piece(x, y, pa, t);
+	return std::make_shared<Piece>(x, y, pa, t);
 }
 
 static PieceType getRandomPiece() {
