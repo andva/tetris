@@ -68,8 +68,8 @@ class Piece {
 					glm::vec2 p = glm::vec2(static_cast<float>(x), static_cast<float>(y));
 					glm::mat2 rot = d == RIGHT ? glm::mat2(0, 1, -1, 0) : glm::mat2(0, -1, 1, 0);
 					
-					int xOffset = d == LEFT ? mGrid.size() - 1 : 0;
-					int yOffset = d == LEFT ? 0 : mGrid.size() - 1;
+					int xOffset = d == LEFT ? static_cast<int>(mGrid.size()) - 1 : 0;
+					int yOffset = d == LEFT ? 0 : static_cast<int>(mGrid.size()) - 1;
 					glm::vec2 newP = p * rot;
 					int32_t nx = static_cast<int32_t>(newP.x) + xOffset;
 					int32_t ny = static_cast<int32_t>(newP.y) + yOffset;
@@ -78,6 +78,7 @@ class Piece {
 				}
 			}
 			mGrid = newGrid;
+			UpdateCollisionObject();
 		}
 
 		void Move(Direction d) {
@@ -93,6 +94,7 @@ class Piece {
 			else if (d == UP) {
 				mAnchor += glm::ivec2(0, -1);
 			}
+			UpdateCollisionObject();
 		}
 
 		glm::vec2 ToRenderable(int32_t x, int32_t y) {
@@ -103,28 +105,21 @@ class Piece {
 			return x + mAnchor.x + (y + mAnchor.y) * (BOARD_GRID_SIZE_X + 1);
 		}
 
-		std::vector<glm::ivec2> GetCollisionObject() const {
-			std::vector<glm::ivec2> collisionObject;
-			for (uint32_t x = 0; x < mGrid.size(); x++) {
-				for (uint32_t y = 0; y < mGrid.size(); y++) {
-					if (mGrid[y][x] > 0) {
-						collisionObject.push_back(glm::ivec2(x + mAnchor.x, y + mAnchor.y));
-					}
-				}
-			}
-			return collisionObject;
+		const std::vector<glm::ivec2>& GetCollisionObject() const {
+			return mCollisionObject;
 		}
 
 		std::vector<unsigned int> GetRenderable() {
 			std::vector<unsigned int> renderable;
-			
-			for (uint32_t x = 0; x < mGrid.size(); x++) {
-				for (uint32_t y = 0; y < mGrid.size(); y++) {
+			for (uint32_t y = 0; y < mGrid.size(); y++) {
+				if (y + mAnchor.y + 1 <= 0)
+					continue;
+				for (uint32_t x = 0; x < mGrid.size(); x++) {
 					if (mGrid[y][x] > 0) {
- 						renderable.push_back(GridToRenderId(x, y));
+						renderable.push_back(GridToRenderId(x, y));
 						renderable.push_back(GridToRenderId(x + 1, y + 1));
 						renderable.push_back(GridToRenderId(x + 1, y));
-						
+
 						renderable.push_back(GridToRenderId(x, y));
 						renderable.push_back(GridToRenderId(x + 1, y + 1));
 						renderable.push_back(GridToRenderId(x, y + 1));
@@ -139,6 +134,18 @@ class Piece {
 		}
 	
 	private:
+		void UpdateCollisionObject() {
+			mCollisionObject.clear();
+			for (uint32_t x = 0; x < mGrid.size(); x++) {
+				for (uint32_t y = 0; y < mGrid.size(); y++) {
+					if (mGrid[y][x] > 0) {
+						mCollisionObject.push_back(glm::ivec2(x + mAnchor.x, y + mAnchor.y));
+					}
+				}
+			}
+		}
+
+		std::vector<glm::ivec2> mCollisionObject;
 		glm::ivec2 mAnchor;
 		PieceArray mGrid;
 		PieceType mType;

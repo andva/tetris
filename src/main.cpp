@@ -1,18 +1,15 @@
-#include <stdio.h>
-
-
 #include "rendering.h"
 #include "grid.h"
 #include "piece.h"
 #include "piecefactory.h"
+#include "piecemanager.h"
 
 #include <assert.h>
 #include <vector>
-#include <list>
+#include <stdio.h>
 #include <iostream>
 #include <memory>
 #include <functional>
-#include <sstream>
 
 void error_callback(int error, const char* description)
 {
@@ -24,26 +21,10 @@ struct IboData {
 	int32_t size;
 };
 
-static std::list<PieceType> sPieceQueue;
-static PieceType sStoredPiece;
-static bool sHoldLock;
 static IboData pieceIbo;
-static std::unique_ptr<Piece> sPiece;
-
+static std::unique_ptr<PieceManager> sPieceManager;
 static std::unique_ptr<Grid> sGrid;
 std::array<IboData, NUM_PIECES> gridIbos;
-
-void fillPieceQueue() {
-	while (sPieceQueue.size() < 4) {
-		sPieceQueue.push_back(getRandomPiece());
-	}
-}
-
-void SetNewPiece() {
-	sPiece.reset(CreatePiece(sPieceQueue.front()));
-	sPieceQueue.pop_front();
-	fillPieceQueue();
-}
 
 static void update_renderable(const std::vector<uint32_t>& indices, IboData& iboData) {
 	if (indices.size() == 0) {
@@ -51,25 +32,28 @@ static void update_renderable(const std::vector<uint32_t>& indices, IboData& ibo
 		return;
 	}
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboData.id);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
-	iboData.size = indices.size();
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+		indices.size() * sizeof(unsigned int),
+		&indices[0],
+		GL_STATIC_DRAW);
+	iboData.size = static_cast<int>(indices.size());
 }
 
 static bool ExecuteAction(Direction d, Action a) {
 	std::function<void(Direction)> action;
 	if (a == MOVE) {
-		action = [] (Direction d) { sPiece->Move(d); };
+		action = [] (Direction d) { sPieceManager->GetPiece()->Move(d); };
 	}
 	else if (a == ROTATE) {
-		action = [] (Direction d) { sPiece->Rotate(d); };
+		action = [] (Direction d) {sPieceManager->GetPiece()->Rotate(d); };
 	}
 	action(d);
-	if (!sGrid->Validate(sPiece->GetCollisionObject())) {
+	if (!sGrid->Validate(sPieceManager->GetPiece()->GetCollisionObject())) {
 		action(GetOpposite(d));
 		return false;
 	}
 	else {
-		update_renderable(sPiece->GetRenderable(), pieceIbo);
+		update_renderable(sPieceManager->GetPiece()->GetRenderable(), pieceIbo);
 		return true;
 	}
 }
@@ -95,38 +79,27 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		ExecuteAction(DOWN, MOVE);
 	}
 	else if (key == GLFW_KEY_H && action == GLFW_RELEASE) {
-		if (sStoredPiece == NUM_PIECES) {
-			sStoredPiece = sPiece->GetType();
-			SetNewPiece();
-			
-			update_renderable(sPiece->GetRenderable(), pieceIbo);
-			sHoldLock = true;
-		}
-		else if (!sHoldLock) {
-			PieceType newType = sPiece->GetType();
-			sPiece.reset(CreatePiece(sStoredPiece));
-			sStoredPiece = newType;
-			sHoldLock = true;
-			update_renderable(sPiece->GetRenderable(), pieceIbo);
+		if (sPieceManager->Hold()) {
+			update_renderable(sPieceManager->GetPiece()->GetRenderable(), pieceIbo);
 		}
 	}
 	else if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE) {
 		while (ExecuteAction(DOWN, MOVE));
-		if (sGrid->Place(sPiece->GetCollisionObject(), sPiece->GetType())) {
-			SetNewPiece();
+		if (sGrid->Place(sPieceManager->GetPiece()->GetCollisionObject(),
+			sPieceManager->GetPiece()->GetType())) {
+			sPieceManager->SetNext();
 			
-			update_renderable(sPiece->GetRenderable(), pieceIbo);
+			update_renderable(sPieceManager->GetPiece()->GetRenderable(), pieceIbo);
 			for (int i = 0; i < gridIbos.size(); i++) {
 				update_renderable(sGrid->GetRenderable(i + 1), gridIbos[i]);
 			}
-			sHoldLock = false;
 		}
 	}
 }
 
 uint32_t create_render_grid() {
 	const int32_t X_D = 10;
-	const int32_t Y_D = 22;
+	const int32_t Y_D = 20;
 	uint32_t gridVbo = 0;
 	glGenBuffers(1, &gridVbo);
 	std::vector<float> pts;
@@ -135,8 +108,8 @@ uint32_t create_render_grid() {
 			glm::vec2 p = glm::vec2(
 				static_cast<float>(x) / static_cast<float>(X_D),
 				static_cast<float>(y) / static_cast<float>(Y_D));
-			pts.push_back((p.x * 2.0f - 1.0f));
-			pts.push_back((1.0f - p.y * 2.0f));
+			pts.push_back(p.x * 2.0f - 1.0f);
+			pts.push_back(1.0f - p.y * 2.0f);
 			pts.push_back(0.0f);
 		}
 	}
@@ -145,15 +118,24 @@ uint32_t create_render_grid() {
 	return gridVbo;
 }
 
+void draw(IboData data, GLint colorLoc, int32_t color) {
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.id);
+	if (colorLoc != -1) {
+		glUniform1ui(colorLoc, color);
+	}
+	glDrawElements(
+		GL_TRIANGLES,
+		data.size,
+		GL_UNSIGNED_INT,
+		(void*) 0
+		);
+}
 
 int main(int argc, char *argv[]) {
 	GLFWwindow* window = init_rendering();
 	int32_t shader_program = compile_program();
 	glfwSetKeyCallback(window, key_callback);
-	sStoredPiece = NUM_PIECES;
-	sHoldLock = false;
-	fillPieceQueue();
-	SetNewPiece();
+	sPieceManager.reset(new PieceManager);
 
 	sGrid.reset(new Grid);
 	uint32_t ptVbo = create_render_grid();
@@ -161,7 +143,8 @@ int main(int argc, char *argv[]) {
 	for (int i = 0; i < gridIbos.size(); i++) {
 		glGenBuffers(1, &gridIbos[i].id);
 	}
-	update_renderable(sPiece->GetRenderable(), pieceIbo);
+
+	update_renderable(sPieceManager->GetPiece()->GetRenderable(), pieceIbo);
 	for (int i = 0; i < gridIbos.size(); i++) {
 		update_renderable(sGrid->GetRenderable(i + 1), gridIbos[i]);
 	}
@@ -172,44 +155,25 @@ int main(int argc, char *argv[]) {
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
+	glUseProgram(shader_program);
+	GLint loc = glGetUniformLocation(shader_program, "color");
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, ptVbo);
+	glBindVertexArray(vao);
+
 	while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glUseProgram(shader_program);
-		
-		// Draw piece
-		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, ptVbo);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pieceIbo.id);
-		glBindVertexArray(vao);
-		GLint loc = glGetUniformLocation(shader_program, "color");
-		if (loc != -1) {
-   			glUniform1ui(loc, sPiece->GetType() - 1);
-		}
-		glDrawElements(
-			GL_TRIANGLES,
-			pieceIbo.size,
-			GL_UNSIGNED_INT,
-			(void*)0
- 		);
+
 		for (uint32_t i = 0; i < gridIbos.size(); i++) {
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gridIbos[i].id);
-			if (loc != -1) {
-   				glUniform1ui(loc, i);
-			}
-			glDrawElements(
-				GL_TRIANGLES,
-				gridIbos[i].size,
-				GL_UNSIGNED_INT,
-				(void*)0
- 			);
+			draw(gridIbos[i], loc, i);
 		}
+
+		draw(pieceIbo, loc, sPieceManager->GetPiece()->GetType() - 1);
+
+		
 		glfwPollEvents();
-		std::stringstream ss;
-		for (auto pt : sPieceQueue) {
-			ss << ToName(pt) << " ";
-		}
-		ss << "(" << ToName(sStoredPiece) << ")";
-		glfwSetWindowTitle(window, ss.str().c_str());
+
+		glfwSetWindowTitle(window, sPieceManager->GetFutureState().c_str());
 		glfwSwapBuffers(window);
 	}
 

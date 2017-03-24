@@ -27,4 +27,8 @@ static Direction GetOpposite(Direction d) {
 	if (d == DOWN) {
 		return UP;
 	}
+	else {
+		assert(false);
+		return DOWN;
+	}
 }

@@ -8,7 +8,7 @@
 #include <glm/vec2.hpp>
 
 const int BOARD_GRID_SIZE_X = 10;
-const int BOARD_GRID_SIZE_Y = 22;
+const int BOARD_GRID_SIZE_Y = 20;
 
 class Grid {
 	public:
@@ -27,7 +27,7 @@ class Grid {
 		bool Validate(std::vector<glm::ivec2> collisionObj) const {
 			assert(collisionObj.size() > 0);
 			for (glm::ivec2 c : collisionObj) {
-				if (c.x < 0 || c.y < 0
+				if (c.x < 0 || c.y < -2
 					|| c.x >= BOARD_GRID_SIZE_X
 					|| c.y >= BOARD_GRID_SIZE_Y) {
 					return false;
@@ -67,7 +67,6 @@ class Grid {
 						}
 					}
 					if (complete) {
-						printf("Cleared row: %i\n", r);
 						for (uint32_t x = 0; x < BOARD_GRID_SIZE_X; x++) {
 							mGrid[r][x] = -1;
 						}

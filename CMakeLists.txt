@@ -76,6 +76,7 @@ set(HEADERS
 	"src/piecefactory.h"
 	"src/piece.h"
 	"src/direction.h"
+	"src/piecemanager.h"
 	)
 
 include_directories(
