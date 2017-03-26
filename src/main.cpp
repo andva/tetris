@@ -16,11 +16,6 @@
 #include <thread>
 #define USE_AI false
 
-void error_callback(int error, const char* description)
-{
-	fprintf(stderr, "Error: %s\n", description);
-}
-
 uint32_t create_render_grid() {
 	const int32_t X_D = 10;
 	const int32_t Y_D = 20;
@@ -42,22 +37,6 @@ uint32_t create_render_grid() {
 	return gridVbo;
 }
 
-
-
-void Reset() {
-	//sPieceManager.reset(new PieceManager);
-	//sGrid.reset(new Grid);
-	//update_renderable(sGrid->GetRenderable(sPieceManager->GetPiece()->GetCollisionObject()), pieceIbo);
-	//for (int i = 0; i < gridIbos.size(); i++) {
-	//	update_renderable(sGrid->GetRenderable(i + 1), gridIbos[i]);
-	//}
-	//sHeurestics.aggregateHeight = 0;
-	//sHeurestics.bumpiness = 0;
-	//sHeurestics.completeLines = 0;
-	//sHeurestics.holes = 0;
-	//sHeurestics.score = 0;
-}
-
 int main(int argc, char *argv[]) {
 	GLFWwindow* window = init_rendering();
 	int32_t shader_program = compile_program();
@@ -71,8 +50,6 @@ int main(int argc, char *argv[]) {
 	h.GetGame().Reset();
 	glfwSetKeyCallback(window, Human::HumanKeyCallback);
 #endif
-
-	Reset();
 
 	GLuint vao = 0;
 	glGenVertexArrays(1, &vao);
@@ -90,19 +67,24 @@ int main(int argc, char *argv[]) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 #if USE_AI
-		ai.CalculateOptimal(sPieceManager->GetPiece()->GetType(), sGrid);
-		Drop(sGrid);
+		ai.CalculateOptimal();
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+		if (ai.GetGame().GetGrid().HasLost()) {
+			ai.GetGame().Reset();
+		}
 		ai.GetGame().Render(loc);
-		std::this_thread::sleep_for(std::chrono::milliseconds(200));
 #else
 		glfwPollEvents();
 		h.Update();
+		if (h.GetGame().GetGrid().HasLost()) {
+			h.GetGame().Reset();
+		}
 		h.GetGame().Render(loc);
 #endif
 
 		//glfwSetWindowTitle(window, sPieceManager->GetFutureState().c_str());
 		glfwSwapBuffers(window);
-		
+
 		/*if (sGrid->HasLost()) {
 			Reset();
 		}*/

@@ -15,6 +15,7 @@ struct AiWeights {
 };
 
 struct Heurestics {
+	Heurestics() : aggregateHeight(0), completeLines(0), holes(0), bumpiness(0), score(0) {};
 	uint32_t aggregateHeight;
 	uint32_t completeLines;
 	uint32_t holes;
@@ -28,8 +29,9 @@ class Ai {
 		Game& GetGame() {
 			return mGame;
 		}
-		void CalculateOptimal(Tetromino t, std::shared_ptr<Grid> grid);
+		void CalculateOptimal();
 	private:
 		AiWeights mWeights;
 		Game mGame;
+		PieceManager mPieceManager;
 };

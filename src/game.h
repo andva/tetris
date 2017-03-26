@@ -54,8 +54,8 @@ public:
 
 	void Update();
 
-	const GridData& GetGridData() const {
-		mGrid->GetGridData();
+	const Grid& GetGrid() const {
+		return mGrid;
 	}
 
 	void Render(int32_t loc) const;
@@ -64,7 +64,7 @@ public:
 
 	private:
 		PieceManager mPieceManager;
-		std::shared_ptr<Grid> mGrid;
+		Grid mGrid;
 		IboData mPieceIbo;
 		std::array<IboData, static_cast<size_t>(Tetromino::NUM_PIECES)> mGridIbos;
 };

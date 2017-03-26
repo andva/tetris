@@ -45,12 +45,12 @@ bool Game::ExecuteAction(Dir d, Action a)
 	}
 	action(d);
 	auto collObj = mPieceManager.GetPiece()->GetCollisionObject();
-	if (!mGrid->Validate(collObj)) {
+	if (!mGrid.Validate(collObj)) {
 		action(GetOpposite(d));
 		return false;
 	}
 	else {
-		UpdateRenderable(mGrid->GetRenderable(collObj), mPieceIbo);
+		UpdateRenderable(mGrid.GetRenderable(collObj), mPieceIbo);
 		return true;
 	}
 }
@@ -58,7 +58,7 @@ bool Game::ExecuteAction(Dir d, Action a)
 void Game::Hold()
 {
 	if (mPieceManager.Hold()) {
-		UpdateRenderable(mGrid->GetRenderable(mPieceManager.GetPiece()->GetCollisionObject()), mPieceIbo);
+		UpdateRenderable(mGrid.GetRenderable(mPieceManager.GetPiece()->GetCollisionObject()), mPieceIbo);
 	}
 }
 
@@ -66,17 +66,17 @@ void Game::Drop()
 {
 	while (ExecuteAction(Dir::DOWN, Action::MOVE));
 	auto collObj = mPieceManager.GetPiece()->GetCollisionObject();
-	if (mGrid->IsAnythingUnder(collObj)) {
-		auto res = mGrid->Place(
+	if (mGrid.IsAnythingUnder(collObj)) {
+		auto res = mGrid.Place(
 			collObj,
 			static_cast<int32_t>(mPieceManager.GetPiece()->GetType()));
 		//sHeurestics.completeLines += res.first;
 
 		mPieceManager.SetNext();
 
-		UpdateRenderable(mGrid->GetRenderable(mPieceManager.GetPiece()->GetCollisionObject()), mPieceIbo);
+		UpdateRenderable(mGrid.GetRenderable(mPieceManager.GetPiece()->GetCollisionObject()), mPieceIbo);
 		for (int i = 0; i < mGridIbos.size(); i++) {
-			UpdateRenderable(mGrid->GetRenderable(i + 1), mGridIbos[i]);
+			UpdateRenderable(mGrid.GetRenderable(i + 1), mGridIbos[i]);
 		}
 		//mGrid->CalculateGridHeuristics(
 			//sHeurestics.holes,
@@ -150,9 +150,9 @@ void Game::Render(int32_t loc) const
 
 void Game::Reset()
 {
-	mGrid.reset(new Grid);
-	UpdateRenderable(mGrid->GetRenderable(mPieceManager.GetPiece()->GetCollisionObject()), mPieceIbo);
+	mGrid = Grid();
+	UpdateRenderable(mGrid.GetRenderable(mPieceManager.GetPiece()->GetCollisionObject()), mPieceIbo);
 	for (int i = 0; i < mGridIbos.size(); i++) {
-		UpdateRenderable(mGrid->GetRenderable(i + 1), mGridIbos[i]);
+		UpdateRenderable(mGrid.GetRenderable(i + 1), mGridIbos[i]);
 	}
 }
