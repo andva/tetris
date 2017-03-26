@@ -54,24 +54,23 @@ std::pair<uint32_t, bool> Grid::Place(const std::vector<glm::ivec2>& collisionOb
 	if (mLost) return std::make_pair(0, false);
 
 	std::pair<uint32_t, bool> result = { 0, false };
-	std::set<int32_t> rows;
 	// Place piece in grid, check if lost
 	for (glm::ivec2 c : collisionObj) {
 		if (c.y < 0) {
 			mLost = true;
 			return result;
 		}
-
-		if (std::find(collisionObj.begin(), collisionObj.end(), glm::ivec2(c.x, c.y - 1)) == collisionObj.end()) {
-			if (c.y > 0) {
-				int32_t v = mGrid[c.y - 1][c.x];
-				bool tspin = (v > 0);
-				if (tspin) {
-					result.second = result.second || tspin;
-				}
+		// Check for T-Spin
+		if (c.y > 0) {
+			int32_t v = mGrid[c.y - 1][c.x];
+			bool tspin = (v > 0);
+			if (tspin) {
+				result.second = result.second || tspin;
 			}
 		}
-
+	}
+	std::set<int32_t> rows;
+	for (glm::ivec2 c : collisionObj) {
 		mGrid[c.y][c.x] = color;
 		rows.insert(c.y);
 	}
@@ -90,6 +89,7 @@ std::pair<uint32_t, bool> Grid::Place(const std::vector<glm::ivec2>& collisionOb
 			}
 		}
 	}
+	// Collapse completed lines
 	for (int32_t y = BOARD_GRID_SIZE_Y - 1; y >= 0; y--) {
 		for (int32_t x = 0; x < BOARD_GRID_SIZE_X; x++) {
 			if (mGrid[y][x] < 0) {

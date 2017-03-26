@@ -5,6 +5,7 @@
 #include "piecemanager.h"
 #include "game.h"
 #include "ai.h"
+#include "human.h"
 
 #include <assert.h>
 #include <vector>
@@ -13,39 +14,11 @@
 #include <memory>
 #include <chrono>
 #include <thread>
-#define NO_AI true
+#define USE_AI false
 
 void error_callback(int error, const char* description)
 {
 	fprintf(stderr, "Error: %s\n", description);
-}
-
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
-	}
-	else if (key == GLFW_KEY_J && action == GLFW_RELEASE) {
-		ExecuteAction(Dir::LEFT, Action::ROTATE);
-	}
-	else if (key == GLFW_KEY_K && action == GLFW_RELEASE) {
-		ExecuteAction(Dir::RIGHT, Action::ROTATE);
-	}
-	else if (key == GLFW_KEY_A && action == GLFW_RELEASE) {
-		ExecuteAction(Dir::LEFT, Action::MOVE);
-	}
-	else if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
-		ExecuteAction(Dir::RIGHT, Action::MOVE);
-	}
-	else if (key == GLFW_KEY_S && action == GLFW_RELEASE) {
-		ExecuteAction(Dir::DOWN, Action::MOVE);
-	}
-	else if (key == GLFW_KEY_H && action == GLFW_RELEASE) {
-		Hold();
-	}
-	else if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE) {
-		Drop(sGrid);
-	}
 }
 
 uint32_t create_render_grid() {
@@ -69,45 +42,35 @@ uint32_t create_render_grid() {
 	return gridVbo;
 }
 
-void draw(IboData data, GLint colorLoc, int32_t color) {
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.id);
-	if (colorLoc != -1) {
-		glUniform1ui(colorLoc, color);
-	}
-	glDrawElements(
-		GL_TRIANGLES,
-		data.size,
-		GL_UNSIGNED_INT,
-		(void*) 0
-		);
-}
+
 
 void Reset() {
-	sPieceManager.reset(new PieceManager);
-	sGrid.reset(new Grid);
-	update_renderable(sGrid->GetRenderable(sPieceManager->GetPiece()->GetCollisionObject()), pieceIbo);
-	for (int i = 0; i < gridIbos.size(); i++) {
-		update_renderable(sGrid->GetRenderable(i + 1), gridIbos[i]);
-	}
-	sHeurestics.aggregateHeight = 0;
-	sHeurestics.bumpiness = 0;
-	sHeurestics.completeLines = 0;
-	sHeurestics.holes = 0;
-	sHeurestics.score = 0;
+	//sPieceManager.reset(new PieceManager);
+	//sGrid.reset(new Grid);
+	//update_renderable(sGrid->GetRenderable(sPieceManager->GetPiece()->GetCollisionObject()), pieceIbo);
+	//for (int i = 0; i < gridIbos.size(); i++) {
+	//	update_renderable(sGrid->GetRenderable(i + 1), gridIbos[i]);
+	//}
+	//sHeurestics.aggregateHeight = 0;
+	//sHeurestics.bumpiness = 0;
+	//sHeurestics.completeLines = 0;
+	//sHeurestics.holes = 0;
+	//sHeurestics.score = 0;
 }
 
 int main(int argc, char *argv[]) {
 	GLFWwindow* window = init_rendering();
 	int32_t shader_program = compile_program();
-#if NO_AI
-	glfwSetKeyCallback(window, key_callback);
-#endif
-	Ai ai(-0.510066f, 0.760666f, -0.35663f, -0.184483f);
+
 	uint32_t ptVbo = create_render_grid();
-	glGenBuffers(1, &pieceIbo.id);
-	for (int i = 0; i < gridIbos.size(); i++) {
-		glGenBuffers(1, &gridIbos[i].id);
-	}
+
+#if USE_AI
+	Ai ai(-0.510066f, 0.760666f, -0.35663f, -0.184483f);
+#else
+	Human h;
+	h.GetGame().Reset();
+	glfwSetKeyCallback(window, Human::HumanKeyCallback);
+#endif
 
 	Reset();
 
@@ -124,31 +87,25 @@ int main(int argc, char *argv[]) {
 	glBindVertexArray(vao);
 
 	while (!glfwWindowShouldClose(window)) {
-		// AI
-#if !NO_AI
-		ai.CalculateOptimal(sPieceManager->GetPiece()->GetType(), sGrid);
-		Drop(sGrid);
-		std::this_thread::sleep_for(std::chrono::milliseconds(200));
-#endif
-		// Drawing
-
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		for (uint32_t i = 0; i < gridIbos.size(); i++) {
-			draw(gridIbos[i], loc, i + 1);
-		}
-
-		draw(pieceIbo, loc, static_cast<int32_t>(sPieceManager->GetPiece()->GetType()));
-
-		
+#if USE_AI
+		ai.CalculateOptimal(sPieceManager->GetPiece()->GetType(), sGrid);
+		Drop(sGrid);
+		ai.GetGame().Render(loc);
+		std::this_thread::sleep_for(std::chrono::milliseconds(200));
+#else
 		glfwPollEvents();
+		h.Update();
+		h.GetGame().Render(loc);
+#endif
 
-		glfwSetWindowTitle(window, sPieceManager->GetFutureState().c_str());
+		//glfwSetWindowTitle(window, sPieceManager->GetFutureState().c_str());
 		glfwSwapBuffers(window);
 		
-		if (sGrid->HasLost()) {
+		/*if (sGrid->HasLost()) {
 			Reset();
-		}
+		}*/
 		
 	}
 

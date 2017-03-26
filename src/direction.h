@@ -13,6 +13,7 @@ enum class Action {
 	MOVE,
 	ROTATE,
 	DROP,
+	HOLD,
 	PLACE
 };
 

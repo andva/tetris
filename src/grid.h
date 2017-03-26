@@ -13,6 +13,8 @@
 const int32_t BOARD_GRID_SIZE_X = 10;
 const int32_t BOARD_GRID_SIZE_Y = 20;
 
+typedef std::array<std::array<int32_t, BOARD_GRID_SIZE_X>, BOARD_GRID_SIZE_Y> GridData;
+
 class Grid {
 	public:
 		Grid();
@@ -33,7 +35,9 @@ class Grid {
 	
 		void CalculateGridHeuristics(uint32_t& holes, uint32_t& aggregateHeight, uint32_t& bumpiness);
 	
+		const GridData& GetGridData() const { return mGrid; }
+
 	private:
-		std::array<std::array<int32_t, BOARD_GRID_SIZE_X>, BOARD_GRID_SIZE_Y> mGrid;
+		GridData mGrid;
 		bool mLost;
 };

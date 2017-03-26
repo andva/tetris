@@ -1,0 +1,90 @@
+#include "human.h"
+
+void Human::HumanKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+		glfwSetWindowShouldClose(window, GLFW_TRUE);
+	}
+	else if (key == GLFW_KEY_J && action == GLFW_RELEASE) {
+		sPressedRotateLeft = true;
+	}
+	else if (key == GLFW_KEY_K && action == GLFW_RELEASE) {
+		sPressedRotateRight = true;
+	}
+	else if (key == GLFW_KEY_A && action == GLFW_RELEASE) {
+		sPressedLeft = true;
+	}
+	else if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
+		sPressedRight = true;
+	}
+	else if (key == GLFW_KEY_S && action == GLFW_RELEASE) {
+		sPressedDown = true;
+	}
+	else if (key == GLFW_KEY_H && action == GLFW_RELEASE) {
+		sPressedHold = true;
+	}
+	else if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE) {
+		sPressedDrop = true;
+	}
+}
+
+bool Toggle(bool& b) {
+	if (b) {
+		b = false;
+		return true;
+	}
+	return false;
+}
+
+void Human::Update()
+{
+	if (Toggle(sPressedLeft)) {
+		mGame.ExecuteAction(Dir::LEFT, Action::MOVE);
+	}
+	if (Toggle(sPressedRight)) {
+		mGame.ExecuteAction(Dir::RIGHT, Action::MOVE);
+	}
+	if (Toggle(sPressedDown)) {
+		mGame.ExecuteAction(Dir::DOWN, Action::MOVE);
+	}
+	if (Toggle(sPressedDrop)) {
+		mGame.Drop();
+	}
+	if (Toggle(sPressedHold)) {
+		mGame.Hold();
+	}
+	if (Toggle(sPressedRotateLeft)) {
+		mGame.ExecuteAction(Dir::LEFT, Action::ROTATE);
+	}
+	if (Toggle(sPressedRotateRight)) {
+		mGame.ExecuteAction(Dir::RIGHT, Action::ROTATE);
+	}
+}
+
+bool Human::Done()
+{
+	if (sPressedQuit == true) {
+		sPressedQuit = false;
+		return true;
+	}
+	return false;
+}
+
+bool Human::sPressedLeft = false;
+
+bool Human::sPressedDrop = false;
+
+bool Human::sPressedQuit = false;
+
+bool Human::sPressedHold = false;
+
+bool Human::sPressedRotateRight = false;
+
+bool Human::sPressedRotateLeft = false;
+
+bool Human::sPressedDown = false;
+
+bool Human::sPressedRight = false;
+
+
+

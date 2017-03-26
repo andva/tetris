@@ -73,7 +73,8 @@ set(SOURCES
 	"src/piecemanager.cpp"
 	"src/ai.cpp"
 	"src/piece.cpp"
-
+	"src/human.cpp"
+	"src/game.cpp"
 	)
 
 set(HEADERS
@@ -86,6 +87,7 @@ set(HEADERS
 	"src/ai.h"
 	"src/game.h"
 	"src/tetromino.h"
+	"src/human.h"
 	)
 
 include_directories(
