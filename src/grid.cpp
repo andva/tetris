@@ -135,13 +135,15 @@ std::vector<unsigned int> Grid::GetRenderable(const std::vector<glm::ivec2> coll
 {
 	std::vector<unsigned int> renderable;
 	for (glm::ivec2 c : collisionObj) {
-		renderable.push_back(c.x + c.y * (BOARD_GRID_SIZE_X + 1));
-		renderable.push_back(c.x + 1 + c.y * (BOARD_GRID_SIZE_X + 1));
-		renderable.push_back(c.x + 1 + (c.y + 1) * (BOARD_GRID_SIZE_X + 1));
+		if (c.y >= 0) {
+			renderable.push_back(c.x + c.y * (BOARD_GRID_SIZE_X + 1));
+			renderable.push_back(c.x + 1 + c.y * (BOARD_GRID_SIZE_X + 1));
+			renderable.push_back(c.x + 1 + (c.y + 1) * (BOARD_GRID_SIZE_X + 1));
 
-		renderable.push_back(c.x + c.y * (BOARD_GRID_SIZE_X + 1));
-		renderable.push_back(c.x + (c.y + 1) * (BOARD_GRID_SIZE_X + 1));
-		renderable.push_back((c.x + 1) + (c.y + 1) * (BOARD_GRID_SIZE_X + 1));
+			renderable.push_back(c.x + c.y * (BOARD_GRID_SIZE_X + 1));
+			renderable.push_back(c.x + (c.y + 1) * (BOARD_GRID_SIZE_X + 1));
+			renderable.push_back((c.x + 1) + (c.y + 1) * (BOARD_GRID_SIZE_X + 1));
+		}
 	}
 	return renderable;
 }
