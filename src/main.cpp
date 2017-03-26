@@ -13,7 +13,7 @@
 #include <memory>
 #include <chrono>
 #include <thread>
-#define NO_AI false
+#define NO_AI true
 
 void error_callback(int error, const char* description)
 {
@@ -26,19 +26,19 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 	}
 	else if (key == GLFW_KEY_J && action == GLFW_RELEASE) {
-		ExecuteAction(LEFT, ROTATE);
+		ExecuteAction(Dir::LEFT, Action::ROTATE);
 	}
 	else if (key == GLFW_KEY_K && action == GLFW_RELEASE) {
-		ExecuteAction(RIGHT, ROTATE);
+		ExecuteAction(Dir::RIGHT, Action::ROTATE);
 	}
 	else if (key == GLFW_KEY_A && action == GLFW_RELEASE) {
-		ExecuteAction(LEFT, MOVE);
+		ExecuteAction(Dir::LEFT, Action::MOVE);
 	}
 	else if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
-		ExecuteAction(RIGHT, MOVE);
+		ExecuteAction(Dir::RIGHT, Action::MOVE);
 	}
 	else if (key == GLFW_KEY_S && action == GLFW_RELEASE) {
-		ExecuteAction(DOWN, MOVE);
+		ExecuteAction(Dir::DOWN, Action::MOVE);
 	}
 	else if (key == GLFW_KEY_H && action == GLFW_RELEASE) {
 		Hold();
@@ -85,7 +85,7 @@ void draw(IboData data, GLint colorLoc, int32_t color) {
 void Reset() {
 	sPieceManager.reset(new PieceManager);
 	sGrid.reset(new Grid);
-	update_renderable(sPieceManager->GetPiece()->GetRenderable(), pieceIbo);
+	update_renderable(sGrid->GetRenderable(sPieceManager->GetPiece()->GetCollisionObject()), pieceIbo);
 	for (int i = 0; i < gridIbos.size(); i++) {
 		update_renderable(sGrid->GetRenderable(i + 1), gridIbos[i]);
 	}
@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
 #if NO_AI
 	glfwSetKeyCallback(window, key_callback);
 #endif
-	Ai ai(-0.510066, 0.760666, -0.35663, -0.184483);
+	Ai ai(-0.510066f, 0.760666f, -0.35663f, -0.184483f);
 	uint32_t ptVbo = create_render_grid();
 	glGenBuffers(1, &pieceIbo.id);
 	for (int i = 0; i < gridIbos.size(); i++) {
@@ -138,7 +138,7 @@ int main(int argc, char *argv[]) {
 			draw(gridIbos[i], loc, i + 1);
 		}
 
-		draw(pieceIbo, loc, sPieceManager->GetPiece()->GetType());
+		draw(pieceIbo, loc, static_cast<int32_t>(sPieceManager->GetPiece()->GetType()));
 
 		
 		glfwPollEvents();

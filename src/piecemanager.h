@@ -9,81 +9,30 @@
 
 class PieceManager {
 public:
-	PieceManager()
-		: mHoldLock(false)
-		, mStoredPiece(NUM_PIECES)
-	{
-		FillPieceQueue();
-		SetNext();
-	}
+	PieceManager();
 
-	bool Hold() {
-		if (mStoredPiece == NUM_PIECES) {
-			mStoredPiece = mPiece->GetType();
-			SetNext();
-			mHoldLock = true;
-			return true;
-		}
-		else if (!mHoldLock) {
-			PieceType newType = mPiece->GetType();
-			mPiece = CreatePiece(mStoredPiece);
-			mStoredPiece = newType;
-			mHoldLock = true;
-			return true;
-		}
-		return false;
-	}
+	bool Hold();
 
-	void SetNext() {
-		mPiece = CreatePiece(mPieceQueue.front());
-		mPieceQueue.pop_front();
-		FillPieceQueue();
-		mHoldLock = false;
-	}
+	void SetNext();
 
-	void FillPieceQueue() {
-		if (mPieceQueue.size() < 7) {
-			auto newSet = GenerateSequence();
-			for (auto piece : newSet) {
-				mPieceQueue.push_back(piece);
-			}
-		}
-	}
+	void FillPieceQueue();
 
-	void ReplaceCurrentPiece(std::shared_ptr<Piece> p) {
-		mPiece = p;
-	}
+	void ReplaceCurrentPiece(std::shared_ptr<Piece> p);
 
-	bool IsPieceStored() const {
-		return mHoldLock;
-	}
+	bool IsPieceStored() const;
 
-	const std::shared_ptr<Piece> GetPiece() const {
-		return mPiece;
-	}
+	const std::shared_ptr<Piece> GetPiece() const;
 
-	bool HasHoldType() const {
-		return mStoredPiece != NUM_PIECES;
-	}
+	bool HasHoldType() const;
 
-	PieceType GetHoldType() const {
-		return mStoredPiece;
-	}
-
-	PieceType GetNextType() const {
-		return mPieceQueue.front();
-	}
-
-	std::string GetFutureState() const {
-		std::stringstream ss;
-		ss << ToName(mPieceQueue.front()) << " ";
-		ss << "(" << ToName(mStoredPiece) << ")";
-		return ss.str();
-	}
+	Tetromino GetHoldType() const;
+	Tetromino GetNextType() const;
+	std::string GetFutureState() const;
 
 private:
-	std::list<PieceType> mPieceQueue;
-	PieceType mStoredPiece;
+	PieceFactory mFactory;
+	std::list<Tetromino> mPieceQueue;
+	Tetromino mStoredPiece;
 	std::shared_ptr<Piece> mPiece;
 	bool mHoldLock;
 

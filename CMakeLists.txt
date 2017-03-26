@@ -68,6 +68,12 @@ endif()
 
 set(SOURCES
 	"src/main.cpp"
+	"src/grid.cpp"
+	"src/piecefactory.cpp"
+	"src/piecemanager.cpp"
+	"src/ai.cpp"
+	"src/piece.cpp"
+
 	)
 
 set(HEADERS
@@ -79,6 +85,7 @@ set(HEADERS
 	"src/piecemanager.h"
 	"src/ai.h"
 	"src/game.h"
+	"src/tetromino.h"
 	)
 
 include_directories(

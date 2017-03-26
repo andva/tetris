@@ -1,34 +1,36 @@
 #pragma once
 
-enum Direction {
+#include <cassert>
+
+enum class Dir {
 	LEFT,
 	RIGHT,
 	DOWN,
 	UP
 };
 
-enum Action {
+enum class Action {
 	MOVE,
 	ROTATE,
 	DROP,
 	PLACE
 };
 
-static Direction GetOpposite(Direction d) {
-	if (d == LEFT) {
-		return RIGHT;
+static Dir GetOpposite(Dir d) {
+	if (d == Dir::LEFT) {
+		return Dir::RIGHT;
 	}
-	if (d == RIGHT) {
-		return LEFT;
+	if (d == Dir::RIGHT) {
+		return Dir::LEFT;
 	}
-	if (d == UP) {
-		return DOWN;
+	if (d == Dir::UP) {
+		return Dir::DOWN;
 	}
-	if (d == DOWN) {
-		return UP;
+	if (d == Dir::DOWN) {
+		return Dir::UP;
 	}
 	else {
 		assert(false);
-		return DOWN;
+		return Dir::DOWN;
 	}
 }

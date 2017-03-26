@@ -20,11 +20,10 @@ struct Heurestics {
 	uint32_t bumpiness;
 	uint32_t score;
 };
-
 static std::unique_ptr<PieceManager> sPieceManager;
 static std::shared_ptr<Grid> sGrid;
 static IboData pieceIbo;
-std::array<IboData, NUM_PIECES> gridIbos;
+std::array<IboData, static_cast<size_t>(Tetromino::NUM_PIECES)> gridIbos;
 static Heurestics sHeurestics;
 
 void CalculateScore(std::pair<uint32_t, bool> res) {
@@ -60,7 +59,7 @@ void CalculateScore(std::pair<uint32_t, bool> res) {
 }
 
 static void print_heuristics() {
-//	return;
+	return;
 	std::cout
 		<< "AH:" << sHeurestics.aggregateHeight << " "
 		<< "BN:" << sHeurestics.bumpiness << " "
@@ -83,51 +82,52 @@ static void update_renderable(const std::vector<uint32_t>& indices, IboData& ibo
 	iboData.size = static_cast<int>(indices.size());
 }
 
-static bool ExecuteAction(Direction d, Action a) {
-	std::function<void(Direction)> action;
-	if (a == MOVE) {
-		action = [] (Direction d) { sPieceManager->GetPiece()->Move(d); };
+static bool ExecuteAction(Dir d, Action a) {
+	std::function<void(Dir)> action;
+	if (a == Action::MOVE) {
+		action = [] (Dir d) { sPieceManager->GetPiece()->Move(d); };
 	}
-	else if (a == ROTATE) {
-		action = [] (Direction d) {sPieceManager->GetPiece()->Rotate(d); };
+	else if (a == Action::ROTATE) {
+		action = [] (Dir d) {sPieceManager->GetPiece()->Rotate(d); };
 	}
 	action(d);
-	if (!sGrid->Validate(sPieceManager->GetPiece()->GetCollisionObject())) {
+	auto collObj = sPieceManager->GetPiece()->GetCollisionObject();
+	if (!sGrid->Validate(collObj)) {
 		action(GetOpposite(d));
 		return false;
 	}
 	else {
-		update_renderable(sPieceManager->GetPiece()->GetRenderable(), pieceIbo);
+		update_renderable(sGrid->GetRenderable(collObj), pieceIbo);
 		return true;
 	}
 }
 
 static void Hold() {
 	if (sPieceManager->Hold()) {
-		update_renderable(sPieceManager->GetPiece()->GetRenderable(), pieceIbo);
+		update_renderable(sGrid->GetRenderable(sPieceManager->GetPiece()->GetCollisionObject()), pieceIbo);
 	}
 }
 
 static void Drop(std::shared_ptr<Grid> grid) {
-	while (ExecuteAction(DOWN, MOVE));
+	while (ExecuteAction(Dir::DOWN, Action::MOVE));
 	auto collObj = sPieceManager->GetPiece()->GetCollisionObject();
 	if (sGrid->IsAnythingUnder(collObj)) {
 		auto res = grid->Place(
-								collObj,
-								sPieceManager->GetPiece()->GetType());
+			collObj,
+			static_cast<int32_t>(sPieceManager->GetPiece()->GetType()));
 		sHeurestics.completeLines += res.first;
 		
 		sPieceManager->SetNext();
 		
-		update_renderable(sPieceManager->GetPiece()->GetRenderable(), pieceIbo);
+		update_renderable(sGrid->GetRenderable(collObj), pieceIbo);
 		for (int i = 0; i < gridIbos.size(); i++) {
 			update_renderable(sGrid->GetRenderable(i + 1), gridIbos[i]);
 		}
 		sGrid->CalculateGridHeuristics(
-									   sHeurestics.holes,
-									   sHeurestics.aggregateHeight,
-									   sHeurestics.bumpiness
-									   );
+			sHeurestics.holes,
+			sHeurestics.aggregateHeight,
+			sHeurestics.bumpiness
+			);
 		CalculateScore(res);
 		print_heuristics();
 	}

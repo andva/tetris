@@ -23,30 +23,31 @@ class Ai {
 			mWeights.bumpiness = bu;
 		}
 	
-		Piece* CalculateOptimal(PieceType t, std::shared_ptr<Grid> grid) {
+		void CalculateOptimal(Tetromino t, std::shared_ptr<Grid> grid) {
 			std::shared_ptr<Piece> optimalP;
 			
-			float optimal = -999999999.0;
+			float optimal = -999999999.0f;
 			int32_t pcStore = 0;
-			PieceType ht = sPieceManager->HasHoldType() ? sPieceManager->GetHoldType() : sPieceManager->GetNextType();
+			Tetromino ht = sPieceManager->HasHoldType() ? sPieceManager->GetHoldType() : sPieceManager->GetNextType();
 			for (int pc = 0; pc < 2; pc++) {
 				for (int i = 0; i < 4; i++) {
 					for (int x = 0; x < 9; x++) {
-						std::shared_ptr<Piece> p = CreatePiece(pc == 0 ? ht : t);
+						std::shared_ptr<Piece> p = PieceFactory::CreatePiece(pc == 0 ? ht : t);
 						sPieceManager->ReplaceCurrentPiece(p);
 						for (int r = 0; r < i; ++r) {
-							ExecuteAction(LEFT, ROTATE);
+							ExecuteAction(Dir::LEFT, Action::ROTATE);
 						}
 						for (int m = 0; m < 4; m++) {
-							ExecuteAction(LEFT, MOVE);
+							ExecuteAction(Dir::LEFT, Action::MOVE);
 						}
 						for (int m = 0; m < x; m++) {
-							ExecuteAction(RIGHT, MOVE);
+							ExecuteAction(Dir::RIGHT, Action::MOVE);
 						}
  					std::shared_ptr<Grid> gCopy(new Grid(*grid.get()));
-						//					Drop(gCopy);
-						while (ExecuteAction(DOWN, MOVE));
-						auto res = gCopy->Place(p->GetCollisionObject(), p->GetType());
+						while (ExecuteAction(Dir::DOWN, Action::MOVE));
+						auto res = gCopy->Place(
+							p->GetCollisionObject(),
+							static_cast<int32_t>(p->GetType()));
 						Heurestics h;
 						gCopy->CalculateGridHeuristics(h.holes, h.aggregateHeight, h.bumpiness);
 						h.completeLines += res.first;
