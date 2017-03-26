@@ -119,7 +119,7 @@ static void Drop(std::shared_ptr<Grid> grid) {
 		
 		sPieceManager->SetNext();
 		
-		update_renderable(sGrid->GetRenderable(collObj), pieceIbo);
+		update_renderable(sGrid->GetRenderable(sPieceManager->GetPiece()->GetCollisionObject()), pieceIbo);
 		for (int i = 0; i < gridIbos.size(); i++) {
 			update_renderable(sGrid->GetRenderable(i + 1), gridIbos[i]);
 		}
