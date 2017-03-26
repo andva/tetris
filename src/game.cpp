@@ -69,7 +69,8 @@ void Game::Drop()
 	if (mGrid.IsAnythingUnder(collObj)) {
 		auto res = mGrid.Place(
 			collObj,
-			static_cast<int32_t>(mPieceManager.GetPiece()->GetType()));
+			1);
+			//static_cast<int32_t>(mPieceManager.GetPiece()->GetType()));
 		//sHeurestics.completeLines += res.first;
 
 		mPieceManager.SetNext();

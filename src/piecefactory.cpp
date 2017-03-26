@@ -1,8 +1,5 @@
 #include "piecefactory.h"
 
-PieceFactory::PieceFactory()
-	: mGenerator(mDevice()) { }
-
 std::shared_ptr<Piece> PieceFactory::CreatePiece(Tetromino t) {
 	PieceArray pa;
 	int32_t x = 3;
@@ -62,8 +59,7 @@ std::vector<Tetromino> PieceFactory::GenerateSequence() {
 	};
 	std::vector<Tetromino> newSequence;
 	while (pool.size() > 0) {
-		std::uniform_int_distribution<uint32_t> sequenceDist(0, static_cast<uint32_t>(pool.size()) - 1);
-		newSequence.push_back(pool[sequenceDist(mGenerator)]);
+		newSequence.push_back(pool[RandomEngine::GetRandomValue(0, static_cast<uint32_t>(pool.size()) - 1)]);
 		auto it = std::find(pool.begin(), pool.end(), newSequence.back());
 		assert(it != pool.end());
 		pool.erase(it);
@@ -73,6 +69,14 @@ std::vector<Tetromino> PieceFactory::GenerateSequence() {
 
 std::shared_ptr<Piece> PieceFactory::GetRandomPiece()
 {
-	std::uniform_int_distribution<int> distribution(0, static_cast<int32_t>(Tetromino::NUM_PIECES) - 1);
-	return CreatePiece(static_cast<Tetromino>(distribution(mGenerator)));
+	return CreatePiece(static_cast<Tetromino>(RandomEngine::GetRandomValue(0, static_cast<int32_t>(Tetromino::NUM_PIECES) - 1)));
 }
+
+int32_t RandomEngine::GetRandomValue(int32_t low, int32_t high)
+{
+	std::uniform_int_distribution<int> distribution(low, high);
+	return distribution(mGenerator);
+}
+
+std::random_device RandomEngine::mDevice;
+std::default_random_engine RandomEngine::mGenerator(mDevice());

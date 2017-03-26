@@ -58,6 +58,10 @@ public:
 		return mGrid;
 	}
 
+	const PieceManager& GetPieceManager() const {
+		return mPieceManager;
+	}
+
 	void Render(int32_t loc) const;
 
 	void Reset();

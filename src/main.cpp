@@ -38,6 +38,12 @@ uint32_t create_render_grid() {
 }
 
 int main(int argc, char *argv[]) {
+#if USE_AI
+#if TRAINING
+
+#endif
+#endif
+
 	GLFWwindow* window = init_rendering();
 	int32_t shader_program = compile_program();
 
@@ -45,6 +51,7 @@ int main(int argc, char *argv[]) {
 
 #if USE_AI
 	Ai ai(-0.510066f, 0.760666f, -0.35663f, -0.184483f);
+	ai.GetGame().Reset();
 #else
 	Human h;
 	h.GetGame().Reset();

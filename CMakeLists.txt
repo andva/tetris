@@ -75,6 +75,7 @@ set(SOURCES
 	"src/piece.cpp"
 	"src/human.cpp"
 	"src/game.cpp"
+	"src/neural.cpp"
 	)
 
 set(HEADERS
@@ -88,6 +89,7 @@ set(HEADERS
 	"src/game.h"
 	"src/tetromino.h"
 	"src/human.h"
+	"src/neural.h"
 	)
 
 include_directories(
