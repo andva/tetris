@@ -112,7 +112,7 @@ float Genome::GetOutputStatus(Outputs output) const {
 	return mNetwork.at(MAX_NODES + static_cast<int32_t>(output)).mValue;
 };
 
-Genome Crossover(const Genome& g1, const Genome& g2) {
+Genome Genome::CrossOver(const Genome& g1, const Genome& g2) {
 	// This part contains a swap, need to check if it is needed
 	assert(g1.mFitness > g2.mFitness);
 

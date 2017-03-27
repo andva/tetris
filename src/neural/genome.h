@@ -29,6 +29,8 @@ public:
 	
 	float GetOutputStatus(Outputs output) const;
 
+	static Genome CrossOver(const Genome& g1, const Genome& g2);
+
 	std::vector<std::shared_ptr<Gene>> mGenes;
 
 	int32_t mFitness;
