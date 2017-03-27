@@ -27,6 +27,8 @@ class Piece {
 
 		Tetromino GetType() const;
 	
+		int32_t GetMovedLines() const { return mMovedLines; }
+	
 	private:
 		void UpdateCollisionObject();
 
@@ -34,4 +36,5 @@ class Piece {
 		glm::ivec2 mAnchor;
 		PieceArray mGrid;
 		Tetromino mType;
+		int32_t mMovedLines;
 };

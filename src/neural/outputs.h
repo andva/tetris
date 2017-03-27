@@ -1,0 +1,12 @@
+#pragma once;
+
+enum Outputs {
+	MOVE_LEFT,
+	MOVE_RIGHT,
+	MOVE_DOWN,
+	ROTATE_LEFT,
+	ROTATE_RIGHT,
+	HOLD,
+	DROP,
+	NUM_OUTPUTS,
+};

@@ -1,6 +1,10 @@
 #include "piece.h"
 
-Piece::Piece(int32_t x, int32_t y, PieceArray box, Tetromino type) : mAnchor(x, y), mGrid(box), mType(type)
+Piece::Piece(int32_t x, int32_t y, PieceArray box, Tetromino type)
+	: mAnchor(x, y)
+	, mGrid(box)
+	, mType(type)
+	, mMovedLines(0)
 {
 	for (int y = 0; y < box.size(); y++) {
 		assert(box.size() == box[y].size());
@@ -52,9 +56,11 @@ void Piece::Move(Dir d)
 	}
 	else if (d == Dir::DOWN) {
 		mAnchor += glm::ivec2(0, 1);
+		mMovedLines++;
 	}
 	else if (d == Dir::UP) {
 		mAnchor += glm::ivec2(0, -1);
+		mMovedLines--;
 	}
 	UpdateCollisionObject();
 }

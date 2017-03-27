@@ -19,6 +19,7 @@ void UpdateRenderable(const std::vector<uint32_t>& indices, IboData& iboData) {
 }
 
 Game::Game()
+	: mScore(0)
 {
 	glGenBuffers(1, &mPieceIbo.id);
 	for (int i = 0; i < mGridIbos.size(); i++) {
@@ -64,59 +65,54 @@ void Game::Hold()
 
 void Game::Drop()
 {
+	int32_t preDropMovedLines = mPieceManager.GetPiece()->GetMovedLines();
 	while (ExecuteAction(Dir::DOWN, Action::MOVE));
 	auto collObj = mPieceManager.GetPiece()->GetCollisionObject();
 	if (mGrid.IsAnythingUnder(collObj)) {
+		int32_t movedLines = mPieceManager.GetPiece()->GetMovedLines();
+		int32_t droppedLines = movedLines - preDropMovedLines;
 		auto res = mGrid.Place(
 			collObj,
 			1);
-			//static_cast<int32_t>(mPieceManager.GetPiece()->GetType()));
-		//sHeurestics.completeLines += res.first;
-
 		mPieceManager.SetNext();
-
 		UpdateRenderable(mGrid.GetRenderable(mPieceManager.GetPiece()->GetCollisionObject()), mPieceIbo);
 		for (int i = 0; i < mGridIbos.size(); i++) {
 			UpdateRenderable(mGrid.GetRenderable(i + 1), mGridIbos[i]);
 		}
-		//mGrid->CalculateGridHeuristics(
-			//sHeurestics.holes,
-			//sHeurestics.aggregateHeight,
-			//sHeurestics.bumpiness
-			//);
-		CalculateScore(res);
-		//print_heuristics();
+		mScore += CalculateScore(res, movedLines, droppedLines);
 	}
 }
 
-int32_t Game::CalculateScore(std::pair<uint32_t, bool> res)
+int32_t Game::CalculateScore(std::pair<uint32_t, bool> res, int32_t movedLines, int32_t droppedLines)
 {
-	int32_t score = 0;
-	if (res.first == 0) return score;
-	if (!res.second) {
-		if (res.first == 1) {
-			score += 100;
+	assert(movedLines >= 0);
+	int32_t score = movedLines + droppedLines;
+	if (res.first > 0) {
+		if (!res.second) {
+			if (res.first == 1) {
+				score += 100;
+			}
+			else if (res.first == 2) {
+				score += 300;
+			}
+			else if (res.first == 3) {
+				score += 500;
+			}
+			else if (res.first == 4) {
+				score += 800;
+			}
 		}
-		else if (res.first == 2) {
-			score += 300;
-		}
-		else if (res.first == 3) {
-			score += 500;
-		}
-		else if (res.first == 4) {
-			score += 800;
-		}
-	}
-	else {
-		assert(res.first <= 3);
-		if (res.first == 1) {
-			score += 800;
-		}
-		else if (res.first == 2) {
-			score += 1200;
-		}
-		else if (res.first == 3) {
-			score += 1600;
+		else {
+			assert(res.first <= 3);
+			if (res.first == 1) {
+				score += 800;
+			}
+			else if (res.first == 2) {
+				score += 1200;
+			}
+			else if (res.first == 3) {
+				score += 1600;
+			}
 		}
 	}
 	return score;
@@ -156,4 +152,5 @@ void Game::Reset()
 	for (int i = 0; i < mGridIbos.size(); i++) {
 		UpdateRenderable(mGrid.GetRenderable(i + 1), mGridIbos[i]);
 	}
+	mScore = 0;
 }

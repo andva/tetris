@@ -5,6 +5,7 @@
 #include "piecemanager.h"
 #include "game.h"
 #include "ai.h"
+#include "neural/neural.h"
 #include "human.h"
 
 #include <assert.h>
@@ -72,7 +73,7 @@ int main(int argc, char *argv[]) {
 
 	while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+		glfwPollEvents();
 #if USE_AI
 		ai.CalculateOptimal();
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
@@ -81,7 +82,6 @@ int main(int argc, char *argv[]) {
 		}
 		ai.GetGame().Render(loc);
 #else
-		glfwPollEvents();
 		h.Update();
 		if (h.GetGame().GetGrid().HasLost()) {
 			h.GetGame().Reset();

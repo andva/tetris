@@ -52,7 +52,7 @@ void Ai::CalculateOptimal()
 		}
 	}
 	if (pcStore == 0) {
-		Hold();
+		mGame.Hold();
 	}
 	
 	mPieceManager.ReplaceCurrentPiece(optimalP);

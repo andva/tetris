@@ -13,33 +13,6 @@ struct IboData {
 	int32_t size;
 };
 
-//struct Heurestics {
-//	uint32_t aggregateHeight;
-//	uint32_t completeLines;
-//	uint32_t holes;
-//	uint32_t bumpiness;
-//	uint32_t score;
-//};
-
-
-//static void print_heuristics() {
-//	return;
-//	std::cout
-//		<< "AH:" << sHeurestics.aggregateHeight << " "
-//		<< "BN:" << sHeurestics.bumpiness << " "
-//		<< "CL:" << sHeurestics.completeLines << " "
-//		<< "HL:" << sHeurestics.holes << " "
-//		<< "SC:" << sHeurestics.score << " "
-//		<< std::endl;
-//}
-
-
-
-static void Hold() {
-	
-}
-
-
 class Game {
 public:
 	Game();
@@ -50,7 +23,7 @@ public:
 
 	void Drop();
 
-	int32_t CalculateScore(std::pair<uint32_t, bool> res);
+	int32_t CalculateScore(std::pair<uint32_t, bool> res, int32_t movedLines, int32_t droppedLines);
 
 	void Update();
 
@@ -71,4 +44,5 @@ public:
 		Grid mGrid;
 		IboData mPieceIbo;
 		std::array<IboData, static_cast<size_t>(Tetromino::NUM_PIECES)> mGridIbos;
+		int32_t mScore;
 };

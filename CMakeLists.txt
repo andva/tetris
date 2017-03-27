@@ -75,7 +75,9 @@ set(SOURCES
 	"src/piece.cpp"
 	"src/human.cpp"
 	"src/game.cpp"
-	"src/neural.cpp"
+	"src/neural/neural.cpp"
+	"src/neural/genome.cpp"
+	"src/neural/gene.cpp"
 	)
 
 set(HEADERS
@@ -89,7 +91,13 @@ set(HEADERS
 	"src/game.h"
 	"src/tetromino.h"
 	"src/human.h"
-	"src/neural.h"
+	"src/neural/neural.h"
+	"src/neural/gene.h"
+	"src/neural/genome.h"
+	"src/neural/neuron.h"
+	"src/neural/pool.h"
+	"src/neural/species.h"
+	"src/neural/outputs.h"
 	)
 
 include_directories(
@@ -101,3 +109,21 @@ add_executable(tetris ${HEADERS} ${SOURCES} )
 add_dependencies(${PROJ_NAME} glm)
 
 target_link_libraries(tetris ${PLATFORM_LIBRARIES})
+
+macro(group_files target_name root_folder replacepath)
+	foreach(FILE ${ARGN})
+		# Get file name part of file
+		get_filename_component(PARENT_DIR "${FILE}" PATH)
+		if (NOT IS_ABSOLUTE ${PARENT_DIR})
+			set(PARENT_DIR "${CMAKE_CURRENT_LIST_DIR}/${PARENT_DIR}")
+		endif ()
+		file(RELATIVE_PATH relfile ${replacepath} ${PARENT_DIR})
+
+		string(REPLACE "/" "\\" relfile "${relfile}")
+
+		source_group("${relfile}" FILES "${FILE}")
+		set_target_properties("${target_name}" PROPERTIES FOLDER "${root_folder}")
+	endforeach()
+endmacro()
+
+group_files(tetris "" ${CMAKE_CURRENT_LIST_DIR} ${HEADERS} ${SOURCES})
