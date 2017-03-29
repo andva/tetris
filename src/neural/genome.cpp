@@ -134,3 +134,29 @@ Genome Genome::CrossOver(const Genome& g1, const Genome& g2) {
 	child.mMutationRates = g1.mMutationRates;
 	return child;
 }
+
+std::vector<int32_t> RandomNeurons(std::map<int32_t, std::shared_ptr<Gene> >& genes, bool nonInput) {
+	std::vector<int32_t> neurons;
+	if (!nonInput) {
+		for (int32_t i = 0; i < 10 * 20; i++) {
+			neurons.push_back(i);
+		}
+	}
+	for (int i = 0; i < NUM_OUTPUTS; i++) {
+		neurons.push_back(MAX_NODES + NUM_OUTPUTS);
+	}
+	for (auto gene : genes) {
+		if (!nonInput || gene.second->mInto > 20 * 10) {
+			if (std::find(neurons.begin(), neurons.end(), gene.second->mInto) == neurons.end()) {
+				neurons.push_back(gene.second->mInto);
+			}
+		}
+		if (!nonInput || gene.second->mOut > 20 * 10) {
+			if (std::find(neurons.begin(), neurons.end(), gene.second->mOut) == neurons.end()) {
+				neurons.push_back(gene.second->mOut);
+			}
+		}
+	}
+	int32_t count = neurons.size();
+	
+}
