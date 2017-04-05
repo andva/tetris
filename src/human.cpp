@@ -5,10 +5,10 @@ void Human::HumanKeyCallback(GLFWwindow* window, int key, int scancode, int acti
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
 	}
-	else if (key == GLFW_KEY_J && action == GLFW_RELEASE) {
+	else if (key == GLFW_KEY_Q && action == GLFW_RELEASE) {
 		sPressedRotateLeft = true;
 	}
-	else if (key == GLFW_KEY_K && action == GLFW_RELEASE) {
+	else if (key == GLFW_KEY_W && action == GLFW_RELEASE) {
 		sPressedRotateRight = true;
 	}
 	else if (key == GLFW_KEY_LEFT && action == GLFW_RELEASE) {
