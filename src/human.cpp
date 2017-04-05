@@ -11,13 +11,13 @@ void Human::HumanKeyCallback(GLFWwindow* window, int key, int scancode, int acti
 	else if (key == GLFW_KEY_K && action == GLFW_RELEASE) {
 		sPressedRotateRight = true;
 	}
-	else if (key == GLFW_KEY_A && action == GLFW_RELEASE) {
+	else if (key == GLFW_KEY_LEFT && action == GLFW_RELEASE) {
 		sPressedLeft = true;
 	}
-	else if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
+	else if (key == GLFW_KEY_RIGHT && action == GLFW_RELEASE) {
 		sPressedRight = true;
 	}
-	else if (key == GLFW_KEY_S && action == GLFW_RELEASE) {
+	else if (key == GLFW_KEY_DOWN && action == GLFW_RELEASE) {
 		sPressedDown = true;
 	}
 	else if (key == GLFW_KEY_H && action == GLFW_RELEASE) {
@@ -25,6 +25,24 @@ void Human::HumanKeyCallback(GLFWwindow* window, int key, int scancode, int acti
 	}
 	else if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE) {
 		sPressedDrop = true;
+	}
+	else if (key == GLFW_KEY_I && action == GLFW_RELEASE) {
+		sRequestedTetromino = Tetromino::I;
+	}
+	else if (key == GLFW_KEY_S && action == GLFW_RELEASE) {
+		sRequestedTetromino = Tetromino::S;
+	}
+	else if (key == GLFW_KEY_Z && action == GLFW_RELEASE) {
+		sRequestedTetromino = Tetromino::Z;
+	}
+	else if (key == GLFW_KEY_O && action == GLFW_RELEASE) {
+		sRequestedTetromino = Tetromino::O;
+	}
+	else if (key == GLFW_KEY_J && action == GLFW_RELEASE) {
+		sRequestedTetromino = Tetromino::J;
+	}
+	else if (key == GLFW_KEY_L && action == GLFW_RELEASE) {
+		sRequestedTetromino = Tetromino::L;
 	}
 }
 
@@ -59,6 +77,10 @@ void Human::Update()
 	if (Toggle(sPressedRotateRight)) {
 		mGame.ExecuteAction(Dir::RIGHT, Action::ROTATE);
 	}
+	if (sRequestedTetromino != Tetromino::NUM_PIECES) {
+		mGame.SwitchTetromino(sRequestedTetromino);
+		sRequestedTetromino = Tetromino::NUM_PIECES;
+	}
 }
 
 bool Human::Done()
@@ -86,5 +108,4 @@ bool Human::sPressedDown = false;
 
 bool Human::sPressedRight = false;
 
-
-
+Tetromino Human::sRequestedTetromino = Tetromino::NUM_PIECES;

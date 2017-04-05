@@ -62,6 +62,22 @@ void Piece::Move(Dir d)
 		mAnchor += glm::ivec2(0, -1);
 		mMovedLines--;
 	}
+	else if (d == Dir::DOWN_LEFT) {
+		mAnchor += glm::ivec2(-1, 1);
+		mMovedLines++;
+	}
+	else if (d == Dir::DOWN_RIGHT) {
+		mAnchor += glm::ivec2(1, 1);
+		mMovedLines++;
+	}
+	else if (d == Dir::UP_RIGHT) {
+		mAnchor += glm::ivec2(1, -1);
+		mMovedLines--;
+	}
+	else if (d == Dir::UP_LEFT) {
+		mAnchor += glm::ivec2(-1, -1);
+		mMovedLines--;
+	}
 	UpdateCollisionObject();
 }
 

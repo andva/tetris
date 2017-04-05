@@ -19,9 +19,13 @@ public:
 
 	bool ExecuteAction(Dir d, Action a);
 
-	void Hold();
+	bool Rotate(Dir d);
+	
+	bool Move(Dir d);
 
-	void Drop();
+	bool Hold();
+
+	bool Drop();
 
 	int32_t CalculateScore(std::pair<uint32_t, bool> res, int32_t movedLines, int32_t droppedLines);
 
@@ -30,6 +34,8 @@ public:
 	const Grid& GetGrid() const {
 		return mGrid;
 	}
+
+	void SwitchTetromino(Tetromino t);
 
 	const PieceManager& GetPieceManager() const {
 		return mPieceManager;

@@ -26,4 +26,5 @@ private:
 	static bool sPressedHold;
 	static bool sPressedQuit;
 	static bool sPressedDrop;
+	static Tetromino sRequestedTetromino;
 };

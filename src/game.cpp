@@ -27,43 +27,97 @@ Game::Game()
 	}
 }
 
-bool Game::ExecuteAction(Dir d, Action a)
-{
-	if (a == Action::DROP) {
-		Drop();
-		return true;
-	}
-	if (a == Action::HOLD) {
-		Hold();
-		return true;
-	}
-	std::function<void(Dir)> action;
-	if (a == Action::MOVE) {
-		action = [&] (Dir d) { mPieceManager.GetPiece()->Move(d); };
-	}
-	else if (a == Action::ROTATE) {
-		action = [&] (Dir d) {mPieceManager.GetPiece()->Rotate(d); };
-	}
-	action(d);
+void Game::SwitchTetromino(Tetromino t) {
+	mPieceManager.ReplaceCurrentPiece(PieceFactory::CreatePiece(t));
+	auto collObj = mPieceManager.GetPiece()->GetCollisionObject();
+	UpdateRenderable(mGrid.GetRenderable(collObj), mPieceIbo);
+}
+
+bool Game::Rotate(Dir d) {
+	mPieceManager.GetPiece()->Rotate(d);
 	auto collObj = mPieceManager.GetPiece()->GetCollisionObject();
 	if (!mGrid.Validate(collObj)) {
-		action(GetOpposite(d));
+		// Try offsetting in different directions
+		if (d == Dir::LEFT) {
+			if (ExecuteAction(Dir::LEFT, Action::MOVE)) {
+				return true;
+			}
+			if (ExecuteAction(Dir::RIGHT, Action::MOVE)) {
+				return true;
+			}
+			if (ExecuteAction(Dir::DOWN, Action::MOVE)) {
+				return true;
+			}
+			if (ExecuteAction(Dir::DOWN_LEFT, Action::MOVE)) {
+				return true;
+			}
+			if (ExecuteAction(Dir::DOWN_RIGHT, Action::MOVE)) {
+				return true;
+			}
+		}
+		else if (d == Dir::RIGHT) {
+			if (ExecuteAction(Dir::RIGHT, Action::MOVE)) {
+				return true;
+			}
+			if (ExecuteAction(Dir::LEFT, Action::MOVE)) {
+				return true;
+			}
+			if (ExecuteAction(Dir::DOWN, Action::MOVE)) {
+				return true;
+			}
+			if (ExecuteAction(Dir::DOWN_RIGHT, Action::MOVE)) {
+				return true;
+			}
+			if (ExecuteAction(Dir::DOWN_LEFT, Action::MOVE)) {
+				return true;
+			}
+		}
+		else { assert(false); }
 		return false;
 	}
-	else {
+	return true;
+}
+
+bool Game::Move(Dir d) {
+	mPieceManager.GetPiece()->Move(d);
+
+	auto collObj = mPieceManager.GetPiece()->GetCollisionObject();
+	if (!mGrid.Validate(collObj)) {
+		mPieceManager.GetPiece()->Move(GetOpposite(d));
+		return false;
+	}
+	return true;
+}
+
+bool Game::ExecuteAction(Dir d, Action a)
+{
+	bool updated = false;
+	if (a == Action::DROP) {
+		updated = Drop();
+	}
+	if (a == Action::HOLD) {
+		updated = Hold();
+	}
+	if (a == Action::MOVE) {
+		updated = Move(d);
+	}
+	if (a == Action::ROTATE) {
+		updated = Rotate(d);
+	}
+	if (updated) {
+		auto collObj = mPieceManager.GetPiece()->GetCollisionObject();
 		UpdateRenderable(mGrid.GetRenderable(collObj), mPieceIbo);
 		return true;
 	}
+	return false;
 }
 
-void Game::Hold()
+bool Game::Hold()
 {
-	if (mPieceManager.Hold()) {
-		UpdateRenderable(mGrid.GetRenderable(mPieceManager.GetPiece()->GetCollisionObject()), mPieceIbo);
-	}
+	return mPieceManager.Hold();
 }
 
-void Game::Drop()
+bool Game::Drop()
 {
 	int32_t preDropMovedLines = mPieceManager.GetPiece()->GetMovedLines();
 	while (ExecuteAction(Dir::DOWN, Action::MOVE));
@@ -75,12 +129,15 @@ void Game::Drop()
 			collObj,
 			1);
 		mPieceManager.SetNext();
-		UpdateRenderable(mGrid.GetRenderable(mPieceManager.GetPiece()->GetCollisionObject()), mPieceIbo);
+		auto collObj = mPieceManager.GetPiece()->GetCollisionObject();
+		UpdateRenderable(mGrid.GetRenderable(collObj), mPieceIbo);
 		for (int i = 0; i < mGridIbos.size(); i++) {
 			UpdateRenderable(mGrid.GetRenderable(i + 1), mGridIbos[i]);
 		}
 		mScore += CalculateScore(res, movedLines, droppedLines);
+		return true;
 	}
+	return false;
 }
 
 int32_t Game::CalculateScore(std::pair<uint32_t, bool> res, int32_t movedLines, int32_t droppedLines)
